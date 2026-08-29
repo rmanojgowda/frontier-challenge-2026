@@ -138,10 +138,16 @@ tags numeric identifiers `(2, …)` and text `(1, …)`, so a numeric identifier
 sorts *above* a text one and `compare("1.0.0-alpha.1", "1.0.0-alpha.beta")`
 returns `1` instead of `-1`.
 
-**Why it's here:** at **342 lines** it is ~7× the length of any synthetic bug's
-file, and that mattered. This trajectory is a single observed event, not a
+**Why it's here:** at **342 lines** it is over the `read_file` tool's ~6 KB
+result cap, and that mattered. This trajectory is a single observed event, not a
 scored result — it shows the automatic post-patch checkpoint catching a mistake
-the *agent itself* introduced, and the loop recovering to a verified fix.
+the *agent itself* introduced, and the loop recovering to a verified fix. It is
+the **primary curated example** of a broader behaviour: any file large enough to
+be returned truncated to the agent can be patched from a partial view, and the
+loop then recovers either via the checkpoint (as here) or via the agent's own
+re-read (see the note after the table). This was found to be file-size-triggered
+and nondeterministic — not `bug_13`-specific — during a clean-clone reproduction
+test.
 
 **Advanced trajectory — the steps that matter:**
 
@@ -155,15 +161,26 @@ the *agent itself* introduced, and the loop recovering to a verified fix.
 | 12 | `apply_patch semver.py` | **the recovery** — `decision`: *"Now I'll reconstruct the complete file (my truncated patch accidentally dropped everything after `match()`'s docstring)…"* Checkpoint: `6 passed` |
 | 13 | `final_message` | **final verification** — resolved, all 3 originally-failing tests pass, **0 regressions**, 12 / 15 iterations used. The report itself notes it *"had to reconstruct [the file] after an initial patch mistake truncated it."* |
 
+**The other observed instance (`bug_12`, not curated here).** `bug_12`'s
+`number.py` is 213 lines — also over the cap. On a re-run during clean-clone
+reproduction, the agent's step-4 `apply_patch` fixed `intword` correctly **but
+fabricated broken content in the unrelated `scientific()` function**. That
+function is not exported and not touched by any test, so **the checkpoint passed
+clean (`7 passed`) — it did not catch the fabrication**; the agent noticed it by
+re-reading (*"I clearly fabricated part of the `scientific` function…"*) and
+rewrote the file cleanly before finalizing (resolved, 0 regressions, 10
+iterations). Same mechanism, different detector.
+
 **Baseline (`bug_13_baseline_response.txt`):** one shot. It receives the full
 `semver.py` in the prompt (not through a length-capped tool), opens with *"The
 bug is in `nat_cmp`'s `convert` function inside `compare()`. …the tuple tags
 were reversed"*, and returns the corrected file. It resolved `bug_13` cleanly;
 the truncation failure mode never arose for it.
 
-**What this pair demonstrates:** the self-inflicted failure was introduced by
-the agent, **detected by the automatic post-patch checkpoint**, and recovered
-from over eight iterations to a fully correct, verified result. A one-shot
+**What this demonstrates:** a self-inflicted failure from a truncated read is
+caught — by the automatic post-patch checkpoint when it breaks something a test
+exercises (`bug_13`), or by the agent's own re-read when it does not (`bug_12`)
+— and the loop recovers to a fully correct, verified result. A one-shot
 architecture has no equivalent post-patch checkpoint in this workflow to detect
 and recover from that kind of self-inflicted failure. No claim is made that the
-baseline would have failed — in this run it did not.
+baseline would have failed — in these runs it did not.

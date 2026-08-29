@@ -211,44 +211,80 @@ v0–v4 story, more specifics per entry. Newest last.
   module.
 - **Result:** **13/13 resolved by both systems, no regressions; strict
   root-cause identification 12/12 for both** (`bug_04` still n/a). No new
-  capability gap. Advanced wall-clock: `bug_12` 56 s / 4 iterations; `bug_13`
-  123.6 s / 12 iterations (see the next entry). Baseline: `bug_12` 28.2 s,
-  `bug_13` 33.5 s.
+  capability gap. Advanced wall-clock is variable on the two real modules —
+  `bug_12` 56 s / 4 iterations on one run, 92 s / 10 on another; `bug_13`
+  123.6 s / 12 iterations — because both files exceed the `read_file` cap and
+  can trigger the verification-and-recovery event (see the next entry).
+  Baseline: `bug_12` ~28–36 s, `bug_13` 33.5 s.
 - **Agent(s) involved:** Claude Sonnet 5 (both systems); Claude Code (source
   extraction, three-state verification, harness wiring).
 
-## Observed verification-and-recovery event (`bug_13`, one run)
+## Observed verification-and-recovery events (individual runs)
 
-**This is an observed event from a single run, not a measured improvement and
-not a controlled comparison.** It is logged because it is instructive.
+**These are observed events from individual runs, not a measured improvement and
+not a controlled comparison.** They are logged because they are instructive.
 
-`bug_13`'s fixture is the verbatim `python-semver` module: 342 lines, roughly 7×
-the length of any synthetic bug's file. In the advanced run (trajectory
-`eval/results/bug_13_trajectory.json`):
+### The mechanism
 
-- **Step 2** `read_file semver.py` returned a **truncated** result — the tool
-  output is length-capped, so the agent saw ~5.4 KB of a ~10 KB file.
-- **Step 4** `apply_patch` wrote a new `semver.py` assembled from that partial
-  view; it silently dropped everything after `match()`'s docstring.
-- **Step 4 checkpoint** — the automatic post-patch full-suite run reported
-  `1 error` (collection failed on the truncated file). The agent's next message:
-  *"I truncated the file — I need to read the original full content beyond what
-  was shown."*
-- **Steps 5–11** — six `read_file` / `search_code` calls reconstructing the
-  file's contents.
-- **Step 12** `apply_patch` rewrote the complete module; checkpoint `6 passed`.
+Any file large enough to exceed the `read_file` tool's result cap (~6 KB) can be
+returned **truncated** to the agent. A patch built from that partial view
+silently drops or fabricates the unseen part of the file. This is then caught in
+one of two ways:
+
+- **by the automatic post-patch checkpoint**, if the resulting error breaks
+  something the test suite exercises; or
+- **by the agent's own re-reading and self-correction**, if the broken code is
+  not exercised by any test.
+
+Either way the loop converges on a correct, verified result. **A one-shot
+architecture has no equivalent post-patch checkpoint in this workflow to detect
+and recover from that kind of self-inflicted failure.** No claim is made about
+what the baseline would do differently — in both runs below it received the full
+file in its prompt (not through a length-capped tool) and resolved the bug in a
+single call, so the truncation failure mode did not arise for it.
+
+### Instance 1 — `bug_13`, checkpoint-detected
+
+`bug_13`'s fixture is the verbatim `python-semver` module, 342 lines. In one
+advanced run (trajectory `eval/results/bug_13_trajectory.json` /
+`submission/trajectories/bug_13_trajectory.json`):
+
+- **Step 2** `read_file semver.py` returned a **truncated** result (~5.4 KB of a
+  ~10 KB file).
+- **Step 4** `apply_patch` wrote a `semver.py` assembled from that partial view;
+  it silently dropped everything after `match()`'s docstring. **Step-4
+  checkpoint:** `1 error` (collection failed on the truncated module). The
+  agent's next message: *"I truncated the file — I need to read the original
+  full content beyond what was shown."*
+- **Steps 5–12** — reconstruction (`read_file` / `search_code`) and a rewrite;
+  checkpoint `6 passed`.
 - **Verdict** — resolved, all three originally-failing tests pass, **zero
-  regressions**, 12 of 15 iterations used. The agent's own final report:
-  *"had to reconstruct [the file] after an initial patch mistake truncated it."*
+  regressions**, 12 of 15 iterations used.
 
-The failure was introduced by the agent, detected by the automatic post-patch
-checkpoint, and recovered from over eight iterations to a correct, verified
-result. **A one-shot architecture has no equivalent post-patch checkpoint in
-this workflow to detect and recover from that kind of self-inflicted failure.**
-No claim is made about what the baseline would have done — in this run it
-received the full `semver.py` in its prompt (not through a length-capped tool)
-and resolved `bug_13` in a single call, so the truncation failure mode did not
-arise for it.
+### Instance 2 — `bug_12`, agent-detected (surfaced during clean-clone reproduction)
+
+`bug_12`'s `number.py` is 213 lines — also over the cap. On a re-run during
+clean-clone verification of `REPRODUCE.md`:
+
+- **Step 4** `apply_patch` fixed `intword` correctly **but fabricated broken
+  content in the unrelated `scientific()` function** (references to undefined
+  names). Because `scientific()` is not exported by the fixture shim and not
+  touched by any test, **the step-4 checkpoint passed clean (`7 passed`)** — it
+  did not detect the fabrication.
+- The agent noticed it anyway by re-reading (*"I clearly fabricated part of the
+  `scientific` function since it was truncated in my initial read"*), rewrote
+  the file cleanly at **step 10** (checkpoint `7 passed`), and finalized:
+  resolved, **zero regressions**, 10 of 15 iterations.
+
+### Note on how this was found
+
+The truncation behaviour was **not designed in**. It was discovered to be
+**file-size-triggered and nondeterministic — not `bug_13`-specific — during a
+clean-clone reproduction test**, when a `bug_12` that had run cleanly in 4
+iterations earlier hit the event on a fresh run. The reproduction process
+surfacing a new, real behaviour is a small demonstration of it working as
+intended. `bug_13` remains the primary curated example, now correctly framed as
+one of at least two observed instances.
 
 ## Removed / abandoned experiments
 

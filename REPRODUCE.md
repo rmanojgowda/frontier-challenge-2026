@@ -152,8 +152,9 @@ Writes `eval/results/summary.json` and `eval/results/summary.md`, and prints:
   Total    13/13 resolved   13/13 resolved
 ```
 
-(`bug_13`'s 12 advanced iterations are the verification-and-recovery event
-described in `README.md`; numbers vary run to run.)
+(`bug_13`'s 12 advanced iterations in this sample are one instance of the
+verification-and-recovery event described in `README.md` — `bug_12` can trigger
+the same event on a different run; numbers vary run to run.)
 
 Flags: `--bugs bug_03 bug_07` runs a subset (merged into the existing summary),
 `--no-merge` overwrites instead of merging, `--timeout N` sets the per-run cap
@@ -186,8 +187,8 @@ module-level constant with no `Function:` field.)
 | Baseline, one synthetic bug | ~6–8 s | ≪ $0.01 | one API call; laptop, CPU only |
 | Advanced, one synthetic bug | ~17–33 s | ~$0.02–0.05 | 4–6 tool calls; laptop, CPU only |
 | `bug_11`, either system (trap outlier) | 58–79 s | ~$0.05–0.15 | the "wrong hypothesis" trap; both systems reason ~3–8× longer |
-| `bug_13` advanced (recovery outlier) | ~120 s | ~$0.10–0.20 | 12 iterations — the read-truncation-and-recovery event; see README |
-| Full batch (`run_all.py`, 13 bugs × 2 systems) | ~11 min (synthetic 11: ≈530 s; `bug_12` + `bug_13`: ≈240 s) | part of the project total below | one clean pass of both systems |
+| Either real bug's advanced run (recovery outlier, nondeterministic) | ~92–124 s | ~$0.10–0.20 | the read-truncation-and-recovery event (see README); `bug_12` (213-line `number.py`) and `bug_13` (342-line `semver.py`) both exceed the `read_file` cap and can trigger it — same run may instead finish in 4 iterations |
+| Full batch (`run_all.py`, 13 bugs × 2 systems) | ~11 min (synthetic 11: ≈530 s; `bug_12` + `bug_13`: ≈150–260 s depending on whether a recovery event fires) | part of the project total below | one clean pass of both systems |
 | `score_evidence.py` | < 1 s | $0 | no API calls |
 
 **Measured total: $1.24** for the core project — the 11 synthetic bugs, both

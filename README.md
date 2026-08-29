@@ -148,39 +148,58 @@ on reasoning difficulty:
 Both systems took roughly an order of magnitude longer than usual before
 arriving at the correct fix.
 
-### Observed verification-and-recovery event (`bug_13`)
+### Observed verification-and-recovery events
 
-*This is a single observed event from one run, not a controlled
-measured-improvement comparison. It is reported because it is instructive, not
-as a scored result.*
+*These are observed events from individual runs, not a controlled
+measured-improvement comparison. They are reported because they are instructive,
+not as a scored result.*
 
-`bug_13`'s fixture is the verbatim `python-semver` module — 342 lines, ~7× the
-length of any synthetic bug's file. In the advanced run:
+**The mechanism.** Any file large enough to exceed the `read_file` tool's result
+cap (~6 KB) can be returned **truncated** to the agent. A patch built from that
+partial view silently drops or fabricates the unseen part of the file. This is
+then caught in one of two ways:
 
-1. **Step 2** — `read_file semver.py` returned a **truncated** view (the tool
-   result is capped; the agent saw ~5.4 KB of a ~10 KB file).
-2. **Step 4** — `apply_patch` wrote a `semver.py` built from that partial view,
-   silently dropping everything after `match()`'s docstring.
-3. **Step 4 checkpoint** — the automatic post-patch full-suite run reported
-   `1 error` (test collection failed on the broken file). The agent's next
-   message: *"I truncated the file — I need to read the original full content
-   beyond what was shown."*
-4. **Steps 5–11** — six `read_file` / `search_code` calls reconstructing what
-   the file should contain.
-5. **Step 12** — `apply_patch` rewrote the complete module; checkpoint:
-   `6 passed`.
-6. **Verdict** — resolved, all three originally-failing tests pass, **zero
-   regressions**. The agent's own final report states it *"had to reconstruct
-   [the file] after an initial patch mistake truncated it."*
+- **by the automatic post-patch checkpoint** — if the resulting error breaks
+  something the test suite exercises; or
+- **by the agent's own re-reading and self-correction** — if the broken code is
+  not exercised by any test.
 
-The self-inflicted failure was introduced by the agent, detected by the
-automatic post-patch checkpoint, and recovered from over eight iterations
-(12 of 15 used) to a fully correct, verified result. **A one-shot architecture
-has no equivalent post-patch checkpoint in this workflow to detect and recover
-from that kind of self-inflicted failure.** (In this run the baseline received
-the full `semver.py` in its prompt — not through a length-capped tool — and
-resolved `bug_13` cleanly in one call; the truncation failure mode did not
-arise for it, and no claim is made that it would have failed.)
+Either way the loop converges on a correct, verified result. **A one-shot
+architecture has no equivalent post-patch checkpoint in this workflow to detect
+and recover from that kind of self-inflicted failure.** No claim is made about
+what the baseline would do differently — in both runs below it received the full
+file in its prompt (not through a length-capped tool) and resolved the bug in a
+single call, so the truncation failure mode did not arise for it.
+
+**Instance 1 — `bug_13`, checkpoint-detected (the primary curated example).**
+`bug_13`'s fixture is the verbatim `python-semver` module, 342 lines. In one
+advanced run: step 2 `read_file` returned ~5.4 KB of a ~10 KB file; step 4
+`apply_patch` wrote a `semver.py` that dropped everything after `match()`'s
+docstring; the step-4 checkpoint reported `1 error` (collection failed on the
+broken module) and the agent's next message was *"I truncated the file — I need
+to read the original full content beyond what was shown"*; steps 5–12
+reconstructed and rewrote the module (checkpoint `6 passed`); verdict: resolved,
+all three originally-failing tests pass, **zero regressions**, 12 of 15
+iterations used. Trajectory: `submission/trajectories/bug_13_trajectory.json`.
+
+**Instance 2 — `bug_12`, agent-detected (surfaced during clean-clone
+reproduction).** `bug_12`'s `number.py` is 213 lines — also over the cap. On a
+re-run during clean-clone verification of `REPRODUCE.md`, the agent's step-4
+`apply_patch` fixed `intword` correctly **but fabricated broken content in the
+unrelated `scientific()` function** (references to undefined names). Because
+`scientific()` is not exported by the fixture shim and not touched by any test,
+**the step-4 checkpoint passed clean (`7 passed`)** — it did not detect the
+fabrication. The agent noticed it anyway by re-reading (*"I clearly fabricated
+part of the `scientific` function since it was truncated in my initial read"*),
+rewrote the file cleanly at step 10 (checkpoint `7 passed`), and finalized:
+resolved, **zero regressions**, 10 of 15 iterations.
+
+**This was not designed in.** The truncation behaviour was discovered to be
+**file-size-triggered and nondeterministic — not `bug_13`-specific — during a
+clean-clone reproduction test**, when the same `bug_12` that had run cleanly in
+4 iterations earlier hit the event on a fresh run. That the reproduction process
+surfaced a new, real behaviour is itself a small demonstration of it working as
+intended.
 
 ### Root-cause identification (strict, against ground truth)
 
@@ -329,8 +348,10 @@ or third-party assets beyond the open-source `anthropic` SDK and `pytest`.
   files; we wanted at least two bugs the systems could not have seen and a
   larger real module.
 - **Result:** **13/13 resolved by both systems; strict root-cause
-  identification 12/12 for both.** No new capability gap. `bug_13`'s 342-line
-  file did produce the verification-and-recovery event described above.
+  identification 12/12 for both.** No new capability gap. Both real modules
+  (`bug_13`'s 342-line `semver.py`, `bug_12`'s 213-line `number.py`) are large
+  enough to exceed the `read_file` cap, and each produced a
+  verification-and-recovery event in some runs (see above).
 - **Agent(s) involved:** Claude Sonnet 5 (both systems); Claude Code
   (extraction, verification, wiring).
 
@@ -347,13 +368,13 @@ advanced system's value.
 Whether the tie survives on **larger or less-inspectable codebases** — where
 one shot cannot trace every path and seeing the specific test failure is what
 disambiguates the fix — is **still largely untested and stated as a limitation,
-not hidden.** `bug_13` is a first small data point: its 342-line file was long
+not hidden.** The two real modules are a first small data point: both are large
 enough that the agent's length-capped `read_file` returned a partial view, the
-agent patched from it and broke the file, and the post-patch checkpoint plus
-several recovery iterations were what produced a correct result anyway (see
-*Observed verification-and-recovery event*). One bug is an anecdote, not a
-regime change; the advanced architecture is designed for that regime and this
-evaluation still does not properly reach it.
+agent patched from it and damaged the file, and either the post-patch checkpoint
+or the agent's own re-read caught it and drove several recovery iterations to a
+correct result anyway (see *Observed verification-and-recovery events*). Two
+runs are anecdotes, not a regime change; the advanced architecture is designed
+for that regime and this evaluation still does not properly reach it.
 
 ## Hot take
 
