@@ -1,7 +1,7 @@
 # Improvement Changelog
 
 Implementation-level companion to the shorter summary in `README.md`. Same
-v0–v3 story, more specifics per entry. Newest last.
+v0–v4 story, more specifics per entry. Newest last.
 
 ## v0 — Baseline (one-shot prompt)
 
@@ -17,9 +17,9 @@ v0–v3 story, more specifics per entry. Newest last.
   originally-failing test now passes and nothing that passed regressed.
 - **Evidence that motivated it:** n/a — the honest "just ask the model"
   starting point and the fixed reference for every later comparison.
-- **Result:** 10/10 bugs resolved on the initial set (later 11/11).
-  ~6–8 s per bug. No investigation step, no test execution by the model, no
-  retries, no record of the model's reasoning.
+- **Result:** 10/10 bugs resolved on the initial set (later 11/11, then 13/13
+  after v4). ~6–8 s per bug. No investigation step, no test execution by the
+  model, no retries, no record of the model's reasoning.
 - **Agent(s) involved:** Claude Sonnet 5 (subject); Claude Code (harness).
 
 ## v1 — Advanced agentic loop
@@ -45,8 +45,8 @@ v0–v3 story, more specifics per entry. Newest last.
 - **Evidence that motivated it:** the expectation that a one-shot model would
   emit plausible-but-unverified fixes — patching a symptom or a numeric
   coincidence — that a wider test run would catch.
-- **Result:** 11/11 resolved — **no change in resolution rate vs. the
-  baseline.** 4–6 tool calls per bug, ~17–33 s per bug. What changed is
+- **Result:** 11/11 resolved then (13/13 now) — **no change in resolution rate
+  vs. the baseline.** 4–6 tool calls per bug, ~17–33 s per bug. What changed is
   structural: reproduction, iterative verification, and an audit trail now
   exist for every fix.
 
@@ -147,11 +147,108 @@ v0–v3 story, more specifics per entry. Newest last.
   no saved reasoning to score until they were re-run.
 - **Result:** structural capabilities 0/44 (0%) baseline vs 44/44 (100%)
   advanced — by design; weak text checks 22/22 for both; **strict root-cause
-  identification tied 10/10** for both (`bug_04` excluded — its root cause is a
-  module-level regex constant with no single function). Confirmed the
-  differentiator is verifiability, not resolution rate and not diagnostic
-  accuracy.
+  identification tied 10/10** for both at the time (`bug_04` excluded — its root
+  cause is a module-level regex constant with no single function; 12/12 for both
+  after v4). Confirmed the differentiator is verifiability, not resolution rate
+  and not diagnostic accuracy.
 - **Agent(s) involved:** Claude Code.
+
+## v4 — Two real historical GitHub bugs
+
+- **Iteration:** v4 — `eval/bugs/bug_12`, `eval/bugs/bug_13`
+- **Change:** added two bugs that are **unmodified open-source source at their
+  historical pre-fix commits**, each with a real GitHub issue and a merged
+  fixing PR, to sit alongside the 11 synthetic cases.
+
+  - **`bug_12` — `humanize.intword`.** Real repo `jmoiron/humanize` (MIT).
+    `intword` selects the magnitude word from the *unrounded* value but formats
+    the mantissa with rounding, so a mantissa that rounds to `1000.0` keeps the
+    smaller unit — `intword(999_999_999)` → `"1000.0 million"` instead of
+    `"1.0 billion"`, at every tier. Reported as issues
+    [#59](https://github.com/jmoiron/humanize/issues/59) / #64, fixed by PR
+    [#113](https://github.com/jmoiron/humanize/pull/113) (merged 2020-03-05).
+    Fixture: `repo/humanize/number.py` + `i18n.py` are verbatim at the pre-fix
+    commit `b28d9ad895a1b2ef066c0b689b96bc50498554ba` (fix merge
+    `86447e1b661dabdf888449e9e4a447ae59f495f3`); `number.py` sha1
+    `3d388d4b9fb3393a7123497df32430d39328920c`. `__init__.py` is a minimal shim
+    — the upstream one imports `pkg_resources` and locale catalogs unrelated to
+    the bug. Verified: `3 failed / 4 passed` at the pre-fix commit; `7 passed`
+    after the PR #113 `intword` hunk.
+
+  - **`bug_13` — `python-semver` `nat_cmp`.** Real repo
+    `python-semver/python-semver` (BSD-3-Clause). Pre-release precedence
+    direction was inverted: in `nat_cmp`'s `convert()` helper, numeric
+    identifiers were tagged `(2, …)` and text `(1, …)`, so a numeric identifier
+    sorted *above* a text one — `compare("1.0.0-alpha.1", "1.0.0-alpha.beta")`
+    → `1` instead of `-1`. Reported as issue
+    [#45](https://github.com/python-semver/python-semver/issues/45), fixed by PR
+    [#46](https://github.com/python-semver/python-semver/pull/46) (merged
+    2017-01-16, released v2.7.4). Fixture: `repo/semver.py` is verbatim at the
+    pre-fix commit `41a071595cdb400e625f366838b35d61d538ac7e` (v2.7.3; fix merge
+    `4cac6fff9d7a530f358b65385658915e4f2a5caa`); sha1
+    `3a9ee799fc72901e8f27f2581184adf720c2d778`. `repo/LICENSE.txt` is the
+    upstream file. Verified: `3 failed / 3 passed` at the pre-fix commit;
+    `6 passed` after the PR #46 `nat_cmp` rewrite.
+
+  **`bug_13` was scoped twice.** The first attempt was built around
+  `compare("1.0.0-beta.2", "1.0.0-beta.11")` and `compare("1.0.0-rc.1",
+  "1.0.0")`. A verification gate before building found both **already pass** at
+  the pre-fix commit `41a0715` — an earlier PR had fixed pure-lexicographic
+  comparison, so by issue #45 / PR #46 only the numeric-vs-text *direction* and
+  an (implicit, not actually broken) field-count tiebreak remained. The case was
+  dropped and rebuilt around `compare("1.0.0-alpha.1", "1.0.0-alpha.beta")`,
+  which genuinely returns `1` at the pre-fix commit. `ground_truth.md` documents
+  this and is explicit about what is *not* broken at that revision.
+
+  Each real bug ships a paraphrased user-voice `bug_report.md` (not copied from
+  GitHub), evaluator tests for the reported vector plus protected
+  already-passing vectors, and a `ground_truth.md` with repo / issue / PR / both
+  commit hashes and the historical fix. `eval/run_all.py` and
+  `eval/score_evidence.py` now cover `bug_01`–`bug_13`.
+- **Evidence that motivated it:** the 11 synthetic cases are all tiny
+  single-purpose files a strong model has effectively seen the shape of; we
+  wanted at least two bugs from real projects and one substantially larger
+  module.
+- **Result:** **13/13 resolved by both systems, no regressions; strict
+  root-cause identification 12/12 for both** (`bug_04` still n/a). No new
+  capability gap. Advanced wall-clock: `bug_12` 56 s / 4 iterations; `bug_13`
+  123.6 s / 12 iterations (see the next entry). Baseline: `bug_12` 28.2 s,
+  `bug_13` 33.5 s.
+- **Agent(s) involved:** Claude Sonnet 5 (both systems); Claude Code (source
+  extraction, three-state verification, harness wiring).
+
+## Observed verification-and-recovery event (`bug_13`, one run)
+
+**This is an observed event from a single run, not a measured improvement and
+not a controlled comparison.** It is logged because it is instructive.
+
+`bug_13`'s fixture is the verbatim `python-semver` module: 342 lines, roughly 7×
+the length of any synthetic bug's file. In the advanced run (trajectory
+`eval/results/bug_13_trajectory.json`):
+
+- **Step 2** `read_file semver.py` returned a **truncated** result — the tool
+  output is length-capped, so the agent saw ~5.4 KB of a ~10 KB file.
+- **Step 4** `apply_patch` wrote a new `semver.py` assembled from that partial
+  view; it silently dropped everything after `match()`'s docstring.
+- **Step 4 checkpoint** — the automatic post-patch full-suite run reported
+  `1 error` (collection failed on the truncated file). The agent's next message:
+  *"I truncated the file — I need to read the original full content beyond what
+  was shown."*
+- **Steps 5–11** — six `read_file` / `search_code` calls reconstructing the
+  file's contents.
+- **Step 12** `apply_patch` rewrote the complete module; checkpoint `6 passed`.
+- **Verdict** — resolved, all three originally-failing tests pass, **zero
+  regressions**, 12 of 15 iterations used. The agent's own final report:
+  *"had to reconstruct [the file] after an initial patch mistake truncated it."*
+
+The failure was introduced by the agent, detected by the automatic post-patch
+checkpoint, and recovered from over eight iterations to a correct, verified
+result. **A one-shot architecture has no equivalent post-patch checkpoint in
+this workflow to detect and recover from that kind of self-inflicted failure.**
+No claim is made about what the baseline would have done — in this run it
+received the full `semver.py` in its prompt (not through a length-capped tool)
+and resolved `bug_13` in a single call, so the truncation failure mode did not
+arise for it.
 
 ## Removed / abandoned experiments
 
@@ -184,7 +281,7 @@ v0–v3 story, more specifics per entry. Newest last.
 
 - **Tried:** the original project premise — that an agentic loop with execution
   and iteration would resolve bugs a one-shot model could not.
-- **Why it didn't make the cut:** falsified by the experiment. 11/11 vs 11/11
-  across the whole set, including the hardened trap. The thesis in `README.md`
-  is the revised version: the value is the verifiable record, not a better
-  patch.
+- **Why it didn't make the cut:** falsified by the experiment. 13/13 vs 13/13
+  across the whole set, including the hardened trap and the two real historical
+  bugs. The thesis in `README.md` is the revised version: the value is the
+  verifiable record, not a better patch.

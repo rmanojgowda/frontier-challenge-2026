@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Batch-run the baseline and the advanced agent over eval/bugs/bug_01..bug_10.
+"""Batch-run the baseline and the advanced agent over eval/bugs/bug_01..bug_13.
 
 For every bug this launches two subprocesses, each with its own timeout:
 
@@ -46,7 +46,7 @@ BASELINE_SCRIPT = REPO_ROOT / "baseline" / "run_baseline.py"
 ADVANCED_SCRIPT = REPO_ROOT / "advanced" / "run_agent.py"
 
 DEFAULT_TIMEOUT_S = 240
-DEFAULT_BUGS = [f"bug_{i:02d}" for i in range(1, 12)]
+DEFAULT_BUGS = [f"bug_{i:02d}" for i in range(1, 14)]
 
 
 # --------------------------------------------------------------------------- #
@@ -230,7 +230,7 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_S,
                     help=f"per-run timeout in seconds (default {DEFAULT_TIMEOUT_S})")
     ap.add_argument("--bugs", nargs="+", default=DEFAULT_BUGS,
-                    help="bug ids to run (default: bug_01 .. bug_11)")
+                    help="bug ids to run (default: bug_01 .. bug_13)")
     ap.add_argument("--no-merge", action="store_true",
                     help="overwrite summary.json/.md with only this run's bugs "
                          "instead of merging into the existing results")

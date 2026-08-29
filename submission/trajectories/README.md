@@ -1,6 +1,6 @@
 # Representative trajectories
 
-Three bugs, chosen to show the range of what the systems do. Each has two files:
+Four bugs, chosen to show the range of what the systems do. Each has two files:
 
 | File | What it is |
 |---|---|
@@ -11,9 +11,12 @@ Reading tip: the `verdict` block at the top of each JSON is the summary. The
 "key steps" below point at the 2–3 steps that carry the interesting reasoning
 so you don't have to read the whole array.
 
-Both systems resolved all three bugs. Full 11-bug results are in
+Both systems resolved all four bugs. Full 13-bug results are in
 `eval/results/summary.md`; the evidence comparison is in
 `eval/results/evidence_scorecard.md`.
+
+`bug_01`, `bug_06`, `bug_11` are synthetic; `bug_13` is a real historical
+`python-semver` bug (issue #45 / PR #46) — see its `ground_truth.md`.
 
 ---
 
@@ -108,7 +111,7 @@ Step 6's `decision` field is only a one-line digest — its
 the reproduction, the `_tier_threshold(2) == 500` collision with Nadia's spend,
 the `net` / coupon / total arithmetic back to `$160.00`, and why Owen at 750
 (strictly `> 500`) was never affected. That step is the single richest piece of
-reasoning in these three files.
+reasoning in the four curated files.
 
 **Baseline (`bug_11_baseline_response.txt`):** the one-shot model — which never
 sees the tests, the protected trap, or Owen — opens with *"the reported 'double
@@ -122,3 +125,45 @@ capable model is not reliably fooled by a misleading report — so resolution
 rate does not separate the two systems here. The difference is that the
 advanced run leaves a checkable record (reproduced failure at step 5,
 regression-checked patch at step 6); the baseline leaves a claim.
+
+---
+
+## bug_13 — verification-and-recovery on a real, larger file
+
+`bug_13` is the verbatim `python-semver` module (BSD-3, issue
+[#45](https://github.com/python-semver/python-semver/issues/45) / PR
+[#46](https://github.com/python-semver/python-semver/pull/46), pre-fix commit
+`41a0715`). The bug: pre-release precedence is inverted — `nat_cmp`'s `convert()`
+tags numeric identifiers `(2, …)` and text `(1, …)`, so a numeric identifier
+sorts *above* a text one and `compare("1.0.0-alpha.1", "1.0.0-alpha.beta")`
+returns `1` instead of `-1`.
+
+**Why it's here:** at **342 lines** it is ~7× the length of any synthetic bug's
+file, and that mattered. This trajectory is a single observed event, not a
+scored result — it shows the automatic post-patch checkpoint catching a mistake
+the *agent itself* introduced, and the loop recovering to a verified fix.
+
+**Advanced trajectory — the steps that matter:**
+
+| Step | Tool | What it shows |
+|---|---|---|
+| 2 | `read_file semver.py` | **the truncation** — the tool result is length-capped; the agent sees ~5.4 KB of a ~10 KB file (it does not realise this yet) |
+| 3 | `run_tests` | reproduces the 3 failing tests before patching |
+| 4 | `apply_patch semver.py` | patches from the partial view — the new file silently drops everything after `match()`'s docstring. **`decision` / checkpoint:** the auto-run reports `1 error` (collection failed on the broken file) |
+| 5 | `read_file semver.py` | **the detection** — `decision`: *"I truncated the file — I need to read the original full content beyond what was shown (it got truncated at 5383 chars)."* |
+| 6–11 | `search_code` ×6 | **the recovery sequence** — enumerating the module's functions and constants to reconstruct what was lost |
+| 12 | `apply_patch semver.py` | **the recovery** — `decision`: *"Now I'll reconstruct the complete file (my truncated patch accidentally dropped everything after `match()`'s docstring)…"* Checkpoint: `6 passed` |
+| 13 | `final_message` | **final verification** — resolved, all 3 originally-failing tests pass, **0 regressions**, 12 / 15 iterations used. The report itself notes it *"had to reconstruct [the file] after an initial patch mistake truncated it."* |
+
+**Baseline (`bug_13_baseline_response.txt`):** one shot. It receives the full
+`semver.py` in the prompt (not through a length-capped tool), opens with *"The
+bug is in `nat_cmp`'s `convert` function inside `compare()`. …the tuple tags
+were reversed"*, and returns the corrected file. It resolved `bug_13` cleanly;
+the truncation failure mode never arose for it.
+
+**What this pair demonstrates:** the self-inflicted failure was introduced by
+the agent, **detected by the automatic post-patch checkpoint**, and recovered
+from over eight iterations to a fully correct, verified result. A one-shot
+architecture has no equivalent post-patch checkpoint in this workflow to detect
+and recover from that kind of self-inflicted failure. No claim is made that the
+baseline would have failed — in this run it did not.

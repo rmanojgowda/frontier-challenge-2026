@@ -41,20 +41,33 @@ Run every command below **from the repository root** — the scripts resolve
 
 ## Data
 
-None external. All 11 bugs are self-contained under `eval/bugs/bug_01` …
-`eval/bugs/bug_11`. Each directory contains:
+None external. All 13 bugs are self-contained under `eval/bugs/bug_01` …
+`eval/bugs/bug_13`. Each directory contains:
 
 - `bug_report.md` — the only description given to either system
 - `repo/` — the buggy source plus its pytest suite
 - `ground_truth.md` — scoring reference (true root cause, tempting wrong fix,
   correct fix); **never shown to either system**
 
+`bug_01`–`bug_11` are hand-written synthetic cases. `bug_12` and `bug_13` are
+**real historical bugs** — unmodified source from open-source projects, checked
+out at the commit just before the upstream fix:
+
+| Bug | Project | License | Issue / PR | Pre-fix commit | Fix merge |
+|---|---|---|---|---|---|
+| `bug_12` | [`jmoiron/humanize`](https://github.com/jmoiron/humanize) — `intword` | MIT | issue [#59](https://github.com/jmoiron/humanize/issues/59) / #64 → PR [#113](https://github.com/jmoiron/humanize/pull/113) | `b28d9ad` | `86447e1` |
+| `bug_13` | [`python-semver/python-semver`](https://github.com/python-semver/python-semver) — `nat_cmp` | BSD-3-Clause | issue [#45](https://github.com/python-semver/python-semver/issues/45) → PR [#46](https://github.com/python-semver/python-semver/pull/46) | `41a0715` (v2.7.3) | `4cac6ff` |
+
+Full provenance, sha1s, and the historical fix are in each bug's
+`ground_truth.md`.
+
 Nothing to download, no fixtures to generate. To confirm a bug is in its
 expected failing state:
 
 ```bash
-python -m pytest eval/bugs/bug_01/repo -q
-# -> 1 or 2 failed, the rest passed
+python -m pytest eval/bugs/bug_01/repo -q     # -> 1 or 2 failed, the rest passed
+python -m pytest eval/bugs/bug_12/repo -q     # -> 3 failed, 4 passed
+python -m pytest eval/bugs/bug_13/repo -q     # -> 3 failed, 3 passed
 ```
 
 ## Running the baseline
@@ -111,7 +124,7 @@ every step) is `eval/results/bug_01_trajectory.json`.
 
 ## Running the evaluation / benchmark
 
-Full batch — both systems, all 11 bugs:
+Full batch — both systems, all 13 bugs:
 
 ```bash
 python eval/run_all.py
@@ -121,15 +134,26 @@ Writes `eval/results/summary.json` and `eval/results/summary.md`, and prints:
 
 ```
   bug      baseline         advanced
-  ------------------------------------------
+  --------------------------------------------
   bug_01   PASS 6.4s        PASS 17.3s (4it)
   bug_02   PASS 6.9s        PASS 32.5s (5it)
-  ...
+  bug_03   PASS 6.1s        PASS 18.5s (4it)
+  bug_04   PASS 7.6s        PASS 32.6s (6it)
+  bug_05   PASS 7.4s        PASS 23.4s (5it)
+  bug_06   PASS 6.4s        PASS 26.6s (5it)
+  bug_07   PASS 6.8s        PASS 20.8s (4it)
+  bug_08   PASS 6.7s        PASS 30.2s (4it)
+  bug_09   PASS 6.3s        PASS 30.1s (6it)
   bug_10   PASS 6.1s        PASS 19.3s (6it)
   bug_11   PASS 58.6s       PASS 78.9s (6it)
-  ------------------------------------------
-  Total    11/11 resolved   11/11 resolved
+  bug_12   PASS 28.2s       PASS 56s (4it)
+  bug_13   PASS 33.5s       PASS 123.6s (12it)
+  --------------------------------------------
+  Total    13/13 resolved   13/13 resolved
 ```
+
+(`bug_13`'s 12 advanced iterations are the verification-and-recovery event
+described in `README.md`; numbers vary run to run.)
 
 Flags: `--bugs bug_03 bug_07` runs a subset (merged into the existing summary),
 `--no-merge` overwrites instead of merging, `--timeout N` sets the per-run cap
@@ -146,26 +170,31 @@ Writes `eval/results/evidence_scorecard.json` / `.md` and prints:
 ```
 group                            baseline         advanced
 ----------------------------------------------------------
-structural                      0/44 (0%)     44/44 (100%)
-data-dependent (weak)        22/22 (100%)     22/22 (100%)
-root-cause-verified          10/10 (100%)     10/10 (100%)
-harness-level                11/11 (100%)     11/11 (100%)
+structural                      0/52 (0%)     52/52 (100%)
+data-dependent (weak)        26/26 (100%)     26/26 (100%)
+root-cause-verified          12/12 (100%)     12/12 (100%)
+harness-level                13/13 (100%)     13/13 (100%)
 ```
+
+(`root-cause-verified` is 12 not 13 because `bug_04`'s root cause is a
+module-level constant with no `Function:` field.)
 
 ## Cost & runtime
 
 | Run | Wall-clock time | Cost | Machine / config |
 |---|---|---|---|
-| Baseline, one bug | ~6–8 s | ≪ $0.01 | one API call; laptop, CPU only |
-| Advanced, one bug | ~17–33 s | ~$0.02–0.05 | 4–6 tool calls; laptop, CPU only |
-| `bug_11`, either system (outlier) | 58–79 s | ~$0.05–0.15 | the "wrong hypothesis" trap; both systems reason ~3–8× longer |
-| Full batch (`run_all.py`, 11 bugs × 2 systems) | ~9 min (measured: 396 s for bug_01–10, ~137 s for bug_11, total ≈530 s) | part of the project total below | one clean pass of both systems |
+| Baseline, one synthetic bug | ~6–8 s | ≪ $0.01 | one API call; laptop, CPU only |
+| Advanced, one synthetic bug | ~17–33 s | ~$0.02–0.05 | 4–6 tool calls; laptop, CPU only |
+| `bug_11`, either system (trap outlier) | 58–79 s | ~$0.05–0.15 | the "wrong hypothesis" trap; both systems reason ~3–8× longer |
+| `bug_13` advanced (recovery outlier) | ~120 s | ~$0.10–0.20 | 12 iterations — the read-truncation-and-recovery event; see README |
+| Full batch (`run_all.py`, 13 bugs × 2 systems) | ~11 min (synthetic 11: ≈530 s; `bug_12` + `bug_13`: ≈240 s) | part of the project total below | one clean pass of both systems |
 | `score_evidence.py` | < 1 s | $0 | no API calls |
 
-**Measured total: $1.24 for the entire project** — all 11 bugs, both systems,
-all debugging reruns, and bug_11's two redesign iterations (source: Claude
-Console cost dashboard). The per-run figures above are rough estimates; the
-$1.24 is the actual billed amount for everything.
+**Measured total: $1.24** for the core project — the 11 synthetic bugs, both
+systems, all debugging reruns, and `bug_11`'s two redesign iterations (source:
+Claude Console cost dashboard). Adding `bug_12` and `bug_13` was two more
+bug-runs on top (roughly $0.10; not separately metered). The per-run figures
+above are rough estimates.
 
 Numbers vary run to run (API latency, and model nondeterminism in the
 iteration count). Resolution outcomes have been stable across reruns.

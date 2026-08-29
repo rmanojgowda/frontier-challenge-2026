@@ -48,7 +48,7 @@ sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS = REPO_ROOT / "eval" / "results"
 BUGS_DIR = REPO_ROOT / "eval" / "bugs"
-BUGS = [f"bug_{i:02d}" for i in range(1, 12)]
+BUGS = [f"bug_{i:02d}" for i in range(1, 14)]
 
 # (number, key, label, group)
 CRITERIA: list[tuple[str, str, str, str]] = [
@@ -92,11 +92,14 @@ def _names_true_function(text: str, func: str | None) -> tuple[bool | None, dict
 
     A bare word-boundary match is deliberately NOT accepted -- 'allow' and
     'height' are ordinary English words and appear in prose about those bugs
-    without referring to the function. We require ```func``` or ``func(``.
+    without referring to the function. Accepted forms: ```func``` , ``func(`` ,
+    ```func(...)``` , and ```func.xxx``` / ```func()`` `` (the name opening a
+    back-ticked code expression, e.g. `nat_cmp.convert()`).
     """
     if not func:
         return None, {"note": "ground_truth.md has no 'Function:' field for this bug"}
-    m = re.search(r"`" + re.escape(func) + r"`|\b" + re.escape(func) + r"\s*\(", text)
+    esc = re.escape(func)
+    m = re.search(r"`" + esc + r"(?:`|\(|\.\w)" + r"|\b" + esc + r"\s*\(", text)
     return bool(m), {"target": func, "matched": m.group(0) if m else None}
 
 
@@ -180,42 +183,43 @@ def score_advanced(bug: str, gt_func: str | None) -> dict:
 # --------------------------------------------------------------------------- #
 def score_baseline(bug: str, gt_func: str | None) -> dict:
     path = RESULTS / f"{bug}_baseline_response.txt"
-    scores: dict[str, object] = {
-        "reproduces_failure": False,
-        "identifies_root_cause": None,
-        "names_true_buggy_function": None,
-        "shows_file_location": None,
-        "demonstrates_fix_after_patch": False,
-        "checks_regression_suite": False,
-        "executable_verification": True,
-        "auditable_trajectory": False,
-    }
 
-    if path.is_file():
-        text = path.read_text(encoding="utf-8")
-        rc_hit, rc_ev = _names_func_or_line(text)
-        fl_hit, fl_ev = _names_pyfile(text)
-        fn_hit, fn_ev = _names_true_function(text, gt_func)
-        scores["identifies_root_cause"] = rc_hit
-        scores["shows_file_location"] = fl_hit
-        scores["names_true_buggy_function"] = fn_hit
+    if not path.is_file():
+        # No response file -> the baseline has not been run on this bug, so
+        # nothing about it is measurable. Return all-None (same as an advanced
+        # bug with no trajectory) so it contributes to no denominator.
         return {
-            "available": True, "response_available": True, "scores": scores,
-            "evidence": {
-                "response_chars": len(text),
-                "root_cause_signals": rc_ev,
-                "file_signals": fl_ev,
-                "true_function_check": fn_ev,
-            },
+            "available": True, "response_available": False,
+            "scores": {k: None for _, k, _, _ in CRITERIA},
+            "evidence": {"note": (
+                "no _baseline_response.txt for this bug -- the baseline has not "
+                "been run on it (or the run predates response persistence in "
+                "run_baseline.py); nothing is measurable from artifacts"
+            )},
         }
 
+    text = path.read_text(encoding="utf-8")
+    rc_hit, rc_ev = _names_func_or_line(text)
+    fl_hit, fl_ev = _names_pyfile(text)
+    fn_hit, fn_ev = _names_true_function(text, gt_func)
+    scores: dict[str, object] = {
+        "reproduces_failure": False,             # structural: no tools, ever
+        "identifies_root_cause": rc_hit,
+        "names_true_buggy_function": fn_hit,
+        "shows_file_location": fl_hit,
+        "demonstrates_fix_after_patch": False,   # structural
+        "checks_regression_suite": False,        # structural
+        "executable_verification": True,         # harness ran pytest before/after
+        "auditable_trajectory": False,           # structural: only a final blob
+    }
     return {
-        "available": True, "response_available": False, "scores": scores,
-        "evidence": {"note": (
-            "no _baseline_response.txt for this bug -- baseline run predates "
-            "response persistence in run_baseline.py; criteria 2, 2b, 3 not "
-            "measurable from artifacts"
-        )},
+        "available": True, "response_available": True, "scores": scores,
+        "evidence": {
+            "response_chars": len(text),
+            "root_cause_signals": rc_ev,
+            "file_signals": fl_ev,
+            "true_function_check": fn_ev,
+        },
     }
 
 

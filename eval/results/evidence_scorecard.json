@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-29T07:21:33+00:00",
+  "generated_at": "2026-08-29T12:59:38+00:00",
   "source": "eval/results/*_trajectory.json, *_baseline_response.txt, eval/bugs/*/ground_truth.md (no API calls)",
   "ground_truth_functions": {
     "bug_01": "truncate",
@@ -12,7 +12,9 @@
     "bug_08": "rank_by_time",
     "bug_09": "allow",
     "bug_10": "height",
-    "bug_11": "get_price_tier"
+    "bug_11": "get_price_tier",
+    "bug_12": "intword",
+    "bug_13": "nat_cmp"
   },
   "criteria": [
     {
@@ -153,7 +155,7 @@
           ],
           "true_function_check": {
             "target": "truncate",
-            "matched": "truncate("
+            "matched": "`truncate("
           }
         }
       }
@@ -278,7 +280,7 @@
           ],
           "true_function_check": {
             "target": "get_worker_count",
-            "matched": "get_worker_count("
+            "matched": "`get_worker_count("
           }
         }
       },
@@ -331,7 +333,7 @@
           ],
           "true_function_check": {
             "target": "get_worker_count",
-            "matched": "get_worker_count("
+            "matched": "`get_worker_count("
           }
         }
       }
@@ -679,7 +681,7 @@
           ],
           "true_function_check": {
             "target": "event_day",
-            "matched": "event_day("
+            "matched": "`event_day("
           }
         }
       }
@@ -766,7 +768,7 @@
           ],
           "true_function_check": {
             "target": "rank_by_time",
-            "matched": "rank_by_time("
+            "matched": "`rank_by_time("
           }
         }
       }
@@ -892,7 +894,7 @@
           ],
           "true_function_check": {
             "target": "height",
-            "matched": "height("
+            "matched": "`height("
           }
         }
       },
@@ -1041,133 +1043,310 @@
           }
         }
       }
+    },
+    "bug_12": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 6873,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "intword"
+            ]
+          },
+          "file_signals": [
+            "humanize/number.py"
+          ],
+          "true_function_check": {
+            "target": "intword",
+            "matched": "`intword`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 4,
+          "run_tests_before_patch_steps": [
+            3
+          ],
+          "post_patch_checks": [
+            "step 4: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "chopped",
+              "format",
+              "formatted",
+              "intword()",
+              "ordinal",
+              "power",
+              "powers",
+              "test_intword_below_million_unchanged"
+            ]
+          },
+          "file_signals": [
+            "humanize/number.py",
+            "test_number.py"
+          ],
+          "true_function_check": {
+            "target": "intword",
+            "matched": "`intword("
+          }
+        }
+      }
+    },
+    "bug_13": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 9647,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "VersionInfo",
+              "compare()",
+              "convert",
+              "nat_cmp"
+            ]
+          },
+          "file_signals": [
+            "semver.py"
+          ],
+          "true_function_check": {
+            "target": "nat_cmp",
+            "matched": "`nat_cmp`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "run_tests",
+            "apply_patch",
+            "read_file",
+            "search_code",
+            "search_code",
+            "search_code",
+            "search_code",
+            "search_code",
+            "search_code",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 4,
+          "run_tests_before_patch_steps": [
+            3
+          ],
+          "post_patch_checks": [
+            "step 4: apply_patch auto-checkpoint",
+            "step 12: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 149"
+            ],
+            "backtick_identifiers": [
+              "compare(\"1.0.0-1\", \"1.0.0-alpha\")",
+              "compare(\"1.0.0-alpha.1\", \"1.0.0-alpha.beta\")",
+              "compare()",
+              "run_tests",
+              "tag",
+              "test_numeric_prerelease_identifier_sorts_below_text",
+              "test_numeric_prerelease_identifier_sorts_below_text_first_field",
+              "test_semver_org_precedence_chain"
+            ]
+          },
+          "file_signals": [
+            "semver.py"
+          ],
+          "true_function_check": {
+            "target": "nat_cmp",
+            "matched": "`nat_cmp.c"
+          }
+        }
+      }
     }
   },
   "aggregates": {
     "structural": {
       "baseline": {
         "met": 0,
-        "measured": 44,
+        "measured": 52,
         "pct": 0.0,
         "per_criterion": {
           "reproduces_failure": {
             "met": 0,
-            "measured": 11
+            "measured": 13
           },
           "demonstrates_fix_after_patch": {
             "met": 0,
-            "measured": 11
+            "measured": 13
           },
           "checks_regression_suite": {
             "met": 0,
-            "measured": 11
+            "measured": 13
           },
           "auditable_trajectory": {
             "met": 0,
-            "measured": 11
+            "measured": 13
           }
         }
       },
       "advanced": {
-        "met": 44,
-        "measured": 44,
+        "met": 52,
+        "measured": 52,
         "pct": 100.0,
         "per_criterion": {
           "reproduces_failure": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           },
           "demonstrates_fix_after_patch": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           },
           "checks_regression_suite": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           },
           "auditable_trajectory": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           }
         }
       }
     },
     "data-dependent (weak)": {
       "baseline": {
-        "met": 22,
-        "measured": 22,
+        "met": 26,
+        "measured": 26,
         "pct": 100.0,
         "per_criterion": {
           "identifies_root_cause": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           },
           "shows_file_location": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           }
         }
       },
       "advanced": {
-        "met": 22,
-        "measured": 22,
+        "met": 26,
+        "measured": 26,
         "pct": 100.0,
         "per_criterion": {
           "identifies_root_cause": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           },
           "shows_file_location": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           }
         }
       }
     },
     "root-cause-verified": {
       "baseline": {
-        "met": 10,
-        "measured": 10,
+        "met": 12,
+        "measured": 12,
         "pct": 100.0,
         "per_criterion": {
           "names_true_buggy_function": {
-            "met": 10,
-            "measured": 10
+            "met": 12,
+            "measured": 12
           }
         }
       },
       "advanced": {
-        "met": 10,
-        "measured": 10,
+        "met": 12,
+        "measured": 12,
         "pct": 100.0,
         "per_criterion": {
           "names_true_buggy_function": {
-            "met": 10,
-            "measured": 10
+            "met": 12,
+            "measured": 12
           }
         }
       }
     },
     "harness-level": {
       "baseline": {
-        "met": 11,
-        "measured": 11,
+        "met": 13,
+        "measured": 13,
         "pct": 100.0,
         "per_criterion": {
           "executable_verification": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           }
         }
       },
       "advanced": {
-        "met": 11,
-        "measured": 11,
+        "met": 13,
+        "measured": 13,
         "pct": 100.0,
         "per_criterion": {
           "executable_verification": {
-            "met": 11,
-            "measured": 11
+            "met": 13,
+            "measured": 13
           }
         }
       }

@@ -1,6 +1,6 @@
 # Evidence scorecard — baseline vs. advanced
 
-_Generated 2026-08-29T07:21:33+00:00 from existing artifacts. No API calls._
+_Generated 2026-08-29T12:59:38+00:00 from existing artifacts. No API calls._
 
 ## How to read this
 
@@ -31,6 +31,8 @@ _Generated 2026-08-29T07:21:33+00:00 from existing artifacts. No API calls._
 | bug_09 | `allow` |
 | bug_10 | `height` |
 | bug_11 | `get_price_tier` |
+| bug_12 | `intword` |
+| bug_13 | `nat_cmp` |
 
 ## Per-bug detail
 
@@ -177,6 +179,32 @@ _Generated 2026-08-29T07:21:33+00:00 from existing artifacts. No API calls._
 | 6 | Harness runs pytest before/after externally | harness-level | yes | yes |
 | 7 | Full step-by-step trajectory is recorded | structural | no | yes |
 
+### bug_12
+
+| # | Criterion | Group | Baseline | Advanced |
+| - | --- | --- | --- | --- |
+| 1 | Reproduces the failure before patching | structural | no | yes |
+| 2 | Uses code formatting / cites a line number (NOT verified vs. true root cause) | data-dependent (weak) | yes | yes |
+| 2b | Explicitly names the actual buggy function (per ground_truth.md) | root-cause-verified | yes | yes |
+| 3 | Names a specific file path | data-dependent (weak) | yes | yes |
+| 4 | Re-runs tests after applying the patch | structural | no | yes |
+| 5 | Re-runs the whole suite after the patch | structural | no | yes |
+| 6 | Harness runs pytest before/after externally | harness-level | yes | yes |
+| 7 | Full step-by-step trajectory is recorded | structural | no | yes |
+
+### bug_13
+
+| # | Criterion | Group | Baseline | Advanced |
+| - | --- | --- | --- | --- |
+| 1 | Reproduces the failure before patching | structural | no | yes |
+| 2 | Uses code formatting / cites a line number (NOT verified vs. true root cause) | data-dependent (weak) | yes | yes |
+| 2b | Explicitly names the actual buggy function (per ground_truth.md) | root-cause-verified | yes | yes |
+| 3 | Names a specific file path | data-dependent (weak) | yes | yes |
+| 4 | Re-runs tests after applying the patch | structural | no | yes |
+| 5 | Re-runs the whole suite after the patch | structural | no | yes |
+| 6 | Harness runs pytest before/after externally | harness-level | yes | yes |
+| 7 | Full step-by-step trajectory is recorded | structural | no | yes |
+
 ## Aggregates (kept separate — do not sum)
 
 ### structural
@@ -185,11 +213,11 @@ _Determined by architecture. Baseline was built to skip these steps._
 
 | Criterion | Baseline | Advanced |
 | --- | --- | --- |
-| 1. Reproduces the failure before patching | 0/11 | 11/11 |
-| 4. Re-runs tests after applying the patch | 0/11 | 11/11 |
-| 5. Re-runs the whole suite after the patch | 0/11 | 11/11 |
-| 7. Full step-by-step trajectory is recorded | 0/11 | 11/11 |
-| **group total** | **0/44 (0%)** | **44/44 (100%)** |
+| 1. Reproduces the failure before patching | 0/13 | 13/13 |
+| 4. Re-runs tests after applying the patch | 0/13 | 13/13 |
+| 5. Re-runs the whole suite after the patch | 0/13 | 13/13 |
+| 7. Full step-by-step trajectory is recorded | 0/13 | 13/13 |
+| **group total** | **0/52 (0%)** | **52/52 (100%)** |
 
 ### data-dependent (weak)
 
@@ -197,9 +225,9 @@ _Weak text checks. Both systems pass trivially; not discriminating._
 
 | Criterion | Baseline | Advanced |
 | --- | --- | --- |
-| 2. Uses code formatting / cites a line number (NOT verified vs. true root cause) | 11/11 | 11/11 |
-| 3. Names a specific file path | 11/11 | 11/11 |
-| **group total** | **22/22 (100%)** | **22/22 (100%)** |
+| 2. Uses code formatting / cites a line number (NOT verified vs. true root cause) | 13/13 | 13/13 |
+| 3. Names a specific file path | 13/13 | 13/13 |
+| **group total** | **26/26 (100%)** | **26/26 (100%)** |
 
 ### root-cause-verified
 
@@ -207,8 +235,8 @@ _Weak text checks. Both systems pass trivially; not discriminating._
 
 | Criterion | Baseline | Advanced |
 | --- | --- | --- |
-| 2b. Explicitly names the actual buggy function (per ground_truth.md) | 10/10 | 10/10 |
-| **group total** | **10/10 (100%)** | **10/10 (100%)** |
+| 2b. Explicitly names the actual buggy function (per ground_truth.md) | 12/12 | 12/12 |
+| **group total** | **12/12 (100%)** | **12/12 (100%)** |
 
 ### harness-level
 
@@ -216,8 +244,8 @@ _External to both systems; identical for both; not discriminating._
 
 | Criterion | Baseline | Advanced |
 | --- | --- | --- |
-| 6. Harness runs pytest before/after externally | 11/11 | 11/11 |
-| **group total** | **11/11 (100%)** | **11/11 (100%)** |
+| 6. Harness runs pytest before/after externally | 13/13 | 13/13 |
+| **group total** | **13/13 (100%)** | **13/13 (100%)** |
 
 ---
 

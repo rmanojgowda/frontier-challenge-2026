@@ -1,11 +1,12 @@
 {
-  "generated_at": "2026-08-29T06:00:38+00:00",
+  "generated_at": "2026-08-29T12:53:55+00:00",
   "timeout_seconds": 240,
-  "batch_wall_clock_seconds": 142.3,
+  "batch_wall_clock_seconds": 258.3,
   "ran_this_batch": [
-    "bug_11"
+    "bug_12",
+    "bug_13"
   ],
-  "carried_from_prior_summary": 10,
+  "carried_from_prior_summary": 11,
   "bugs": [
     {
       "bug_id": "bug_01",
@@ -193,11 +194,45 @@
         "status": "resolved",
         "exit_code": 0
       }
+    },
+    {
+      "bug_id": "bug_12",
+      "baseline": {
+        "resolved": true,
+        "iterations": 1,
+        "wall_clock_seconds": 28.2,
+        "status": "resolved",
+        "exit_code": 0
+      },
+      "advanced": {
+        "resolved": true,
+        "iterations": 4,
+        "wall_clock_seconds": 56.0,
+        "status": "resolved",
+        "exit_code": 0
+      }
+    },
+    {
+      "bug_id": "bug_13",
+      "baseline": {
+        "resolved": true,
+        "iterations": 1,
+        "wall_clock_seconds": 33.5,
+        "status": "resolved",
+        "exit_code": 0
+      },
+      "advanced": {
+        "resolved": true,
+        "iterations": 12,
+        "wall_clock_seconds": 123.6,
+        "status": "resolved",
+        "exit_code": 0
+      }
     }
   ],
   "totals": {
-    "count": 11,
-    "baseline_resolved": 11,
-    "advanced_resolved": 11
+    "count": 13,
+    "baseline_resolved": 13,
+    "advanced_resolved": 13
   }
 }

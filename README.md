@@ -1,10 +1,12 @@
 # Evidence-Driven Automated Debugging
 
 Two automated debugging systems — a one-shot baseline and a sandboxed agentic
-loop — run head-to-head over 11 seeded bugs. The systems are compared on two
-things kept strictly separate throughout this document: **what they measurably
-achieved** (resolution rate, root-cause accuracy) and **what each architecture
-provides by design** (reproduction, verification, an audit trail).
+loop — run head-to-head over 13 bugs (11 hand-written synthetic cases plus two
+real historical bugs lifted from open-source projects at their pre-fix commits).
+The systems are compared on two things kept strictly separate throughout this
+document: **what they measurably achieved** (resolution rate, root-cause
+accuracy) and **what each architecture provides by design** (reproduction,
+verification, an audit trail).
 
 ## Who this is for
 
@@ -35,10 +37,12 @@ investigation — the exact work the fix was meant to save.
 
 ## What existed before this competition
 
-Nothing project-specific. Both systems, the evaluation harness, the 11-bug set,
-and the scoring code were all written during the competition window
+Nothing project-specific. Both systems, the evaluation harness, the 11 synthetic
+bug cases, and the scoring code were all written during the competition window
 (2026-08-28 to 2026-08-29). No prior internal tooling, no forked framework, no
-pre-existing bug corpus.
+pre-existing bug corpus. The two real bugs (`bug_12`, `bug_13`) are unmodified
+source from open-source projects, checked out at their historical pre-fix
+commits — see *The bug set* below.
 
 ## What I built
 
@@ -73,11 +77,39 @@ test, not weaken an existing one); the full suite is re-run automatically after
 every patch; every step (stated reasoning, tool, input, result digest,
 timestamp) is logged to `eval/results/<bug_id>_trajectory.json`.
 
+### The bug set
+
+- **`bug_01`–`bug_11`** — hand-written synthetic bugs in tiny single-purpose
+  modules: off-by-ones, a wrong caught-exception type, a greedy regex, a swapped
+  cross-file call, a timezone bug, and `bug_11`, a purpose-built "wrong
+  hypothesis" trap (twice-hardened).
+- **`bug_12`** — a real bug in [`humanize`](https://github.com/jmoiron/humanize)
+  (MIT). `intword()` rounds a mantissa up to `1000.0` but keeps the smaller unit
+  word, so `intword(999_999_999)` returned `"1000.0 million"` instead of
+  `"1.0 billion"`. Reported as issue
+  [#59](https://github.com/jmoiron/humanize/issues/59) / #64, fixed by PR
+  [#113](https://github.com/jmoiron/humanize/pull/113). Fixture source is the
+  verbatim module at the pre-fix commit `b28d9ad`.
+- **`bug_13`** — a real bug in
+  [`python-semver`](https://github.com/python-semver/python-semver) (BSD-3).
+  Pre-release precedence was inverted: a numeric identifier sorted *above* a
+  text one, so `compare("1.0.0-alpha.1", "1.0.0-alpha.beta")` returned `1`
+  instead of `-1`. Reported as issue
+  [#45](https://github.com/python-semver/python-semver/issues/45), fixed by PR
+  [#46](https://github.com/python-semver/python-semver/pull/46). Fixture source
+  is the verbatim `semver.py` at the pre-fix commit `41a0715` (v2.7.3).
+
+Each real bug ships a paraphrased user-voice `bug_report.md`, evaluator tests
+covering the reported vector plus protected already-passing vectors, and a
+`ground_truth.md` citing the repo, issue, PR, and both commit hashes. Full
+provenance and the historical fix are in each `ground_truth.md` (never shown to
+either system).
+
 ---
 
 ## Measured experimental results
 
-These are the actual findings from running both systems over all 11 bugs. Each
+These are the actual findings from running both systems over all 13 bugs. Each
 number is produced by the harness executing pytest on a pristine copy before
 and a patched copy after, or by `eval/score_evidence.py` reading stored
 artifacts (no extra API calls).
@@ -85,15 +117,16 @@ artifacts (no extra API calls).
 ### Our initial hypothesis was wrong
 
 We expected the agentic loop to **resolve more bugs** than the one-shot model.
-Across this 11-bug set, **it did not.** The two systems tied on resolution and
+Across this 13-bug set, **it did not.** The two systems tied on resolution and
 on root-cause accuracy.
 
 ### Resolution rate
 
 | | Baseline | Advanced |
 |---|---|---|
-| Bugs resolved (all originally-failing tests pass, no regressions) | **11 / 11** | **11 / 11** |
-| Typical wall-clock per bug | 6–8 s | 17–33 s |
+| Bugs resolved (all originally-failing tests pass, no regressions) | **13 / 13** | **13 / 13** |
+| Typical wall-clock per bug (synthetic) | 6–8 s | 17–33 s |
+| The two real bugs | 28–34 s | 56 s / 124 s |
 
 `bug_11` is a "wrong hypothesis" trap: the bug report blames a double-applied
 loyalty bonus; the real cause is an off-by-one in an unrelated price-tier
@@ -115,16 +148,51 @@ on reasoning difficulty:
 Both systems took roughly an order of magnitude longer than usual before
 arriving at the correct fix.
 
+### Observed verification-and-recovery event (`bug_13`)
+
+*This is a single observed event from one run, not a controlled
+measured-improvement comparison. It is reported because it is instructive, not
+as a scored result.*
+
+`bug_13`'s fixture is the verbatim `python-semver` module — 342 lines, ~7× the
+length of any synthetic bug's file. In the advanced run:
+
+1. **Step 2** — `read_file semver.py` returned a **truncated** view (the tool
+   result is capped; the agent saw ~5.4 KB of a ~10 KB file).
+2. **Step 4** — `apply_patch` wrote a `semver.py` built from that partial view,
+   silently dropping everything after `match()`'s docstring.
+3. **Step 4 checkpoint** — the automatic post-patch full-suite run reported
+   `1 error` (test collection failed on the broken file). The agent's next
+   message: *"I truncated the file — I need to read the original full content
+   beyond what was shown."*
+4. **Steps 5–11** — six `read_file` / `search_code` calls reconstructing what
+   the file should contain.
+5. **Step 12** — `apply_patch` rewrote the complete module; checkpoint:
+   `6 passed`.
+6. **Verdict** — resolved, all three originally-failing tests pass, **zero
+   regressions**. The agent's own final report states it *"had to reconstruct
+   [the file] after an initial patch mistake truncated it."*
+
+The self-inflicted failure was introduced by the agent, detected by the
+automatic post-patch checkpoint, and recovered from over eight iterations
+(12 of 15 used) to a fully correct, verified result. **A one-shot architecture
+has no equivalent post-patch checkpoint in this workflow to detect and recover
+from that kind of self-inflicted failure.** (In this run the baseline received
+the full `semver.py` in its prompt — not through a length-capped tool — and
+resolved `bug_13` cleanly in one call; the truncation failure mode did not
+arise for it, and no claim is made that it would have failed.)
+
 ### Root-cause identification (strict, against ground truth)
 
 `eval/score_evidence.py` checks whether each explanation explicitly names the
 **actual** buggy function, taken from the `Function:` field of that bug's
 `ground_truth.md` — a bare word match is rejected, the name must appear as a
-code symbol (`` `foo` `` or `foo(`).
+code symbol (`` `foo` ``, `foo(`, or opening a back-ticked expression such as
+`` `foo.bar()` ``).
 
 | | Baseline | Advanced |
 |---|---|---|
-| Names the true buggy function | **10 / 10** | **10 / 10** |
+| Names the true buggy function | **12 / 12** | **12 / 12** |
 
 (`bug_04` is excluded from both: its root cause is a module-level regex
 constant with no single function to name.)
@@ -133,11 +201,13 @@ constant with no single function to name.)
 
 On this bug set, with this model, the agentic architecture produced **no
 advantage in bugs resolved and no advantage in diagnostic accuracy.** Both
-systems solved everything, including the hardened trap, and both correctly
-named the root cause every time it was checkable.
+systems solved everything — the 11 synthetic cases, the hardened trap, and the
+two real historical bugs — and both correctly named the root cause every time
+it was checkable.
 
-The entire experiment — 11 bugs, both systems, every rerun — cost $1.24 in API
-spend.
+The core experiment — the 11 synthetic bugs, both systems, every rerun — cost
+$1.24 in API spend (Claude Console). Adding the two real bugs was two more
+bug-runs on top (~$0.10).
 
 ---
 
@@ -202,7 +272,7 @@ or third-party assets beyond the open-source `anthropic` SDK and `pytest`.
 - **Change:** bug report + full non-test source in a single API call; returned
   files applied verbatim; harness runs pytest before/after.
 - **Evidence that motivated it:** n/a — starting point.
-- **Result:** 10/10 (later 11/11) resolved; ~6–8 s per bug.
+- **Result:** 10/10 (later 11/11, then 13/13 — see v4) resolved; ~6–8 s per bug.
 - **Agent(s) involved:** Claude Sonnet 5.
 
 ### v1 — Advanced agentic loop
@@ -213,9 +283,9 @@ or third-party assets beyond the open-source `anthropic` SDK and `pytest`.
   auto-checkpoint (full suite) after every patch; full trajectory JSON per bug.
 - **Evidence that motivated it:** hypothesis that a one-shot model would ship
   plausible-but-unverified fixes that break protected tests.
-- **Result:** **resolution rate unchanged (11/11).** The change is entirely
-  architectural: reproduction, iterative verification, and an audit trail now
-  exist for every fix. ~17–33 s per bug, 4–6 tool calls.
+- **Result:** **resolution rate unchanged (11/11 then, 13/13 now).** The change
+  is entirely architectural: reproduction, iterative verification, and an audit
+  trail now exist for every fix. ~17–33 s per bug, 4–6 tool calls.
 - **Agent(s) involved:** Claude Sonnet 5 (agent), Claude Code (harness).
 
 ### v2 — `bug_11`, the "wrong hypothesis" trap
@@ -243,13 +313,30 @@ or third-party assets beyond the open-source `anthropic` SDK and `pytest`.
 - **Evidence that motivated it:** needed to state the difference precisely
   rather than assert "the agent shows its work".
 - **Result:** structural capabilities 0% vs 100% (by design); strict
-  root-cause identification **tied 10/10**. Confirmed the differentiator is
-  verifiability, not capability.
+  root-cause identification **tied 10/10** (at the time; 12/12 after `bug_12` /
+  `bug_13`). Confirmed the differentiator is verifiability, not capability.
 - **Agent(s) involved:** Claude Code.
+
+### v4 — Two real historical GitHub bugs
+
+- **Iteration:** v4 — `eval/bugs/bug_12` (humanize), `eval/bugs/bug_13`
+  (python-semver)
+- **Change:** added two bugs that are unmodified open-source source at their
+  pre-fix commits, each with a real issue + merged PR. `bug_13`'s first scoping
+  was dropped (its proposed vectors already passed at the pre-fix commit) and
+  rebuilt around the vector that actually fails — full detail in `CHANGELOG.md`.
+- **Evidence that motivated it:** the synthetic set is all tiny single-purpose
+  files; we wanted at least two bugs the systems could not have seen and a
+  larger real module.
+- **Result:** **13/13 resolved by both systems; strict root-cause
+  identification 12/12 for both.** No new capability gap. `bug_13`'s 342-line
+  file did produce the verification-and-recovery event described above.
+- **Agent(s) involved:** Claude Sonnet 5 (both systems); Claude Code
+  (extraction, verification, wiring).
 
 ## Main failure mode
 
-Neither system failed to resolve any of the 11 bugs, so there is no resolution
+Neither system failed to resolve any of the 13 bugs, so there is no resolution
 failure to report. The honest limitation is **scope**: this finding holds for
 *small, fully-inspectable codebases* debugged by a *highly capable model*. In
 that regime a misleading bug report does not reliably fool the one-shot model —
@@ -259,9 +346,14 @@ advanced system's value.
 
 Whether the tie survives on **larger or less-inspectable codebases** — where
 one shot cannot trace every path and seeing the specific test failure is what
-disambiguates the fix — is **untested here and stated as a limitation, not
-hidden.** The advanced architecture is designed for that regime; this
-evaluation does not reach it.
+disambiguates the fix — is **still largely untested and stated as a limitation,
+not hidden.** `bug_13` is a first small data point: its 342-line file was long
+enough that the agent's length-capped `read_file` returned a partial view, the
+agent patched from it and broke the file, and the post-patch checkpoint plus
+several recovery iterations were what produced a correct result anyway (see
+*Observed verification-and-recovery event*). One bug is an anecdote, not a
+regime change; the advanced architecture is designed for that regime and this
+evaluation still does not properly reach it.
 
 ## Hot take
 

@@ -1,6 +1,6 @@
 # Eval summary
 
-_Generated 2026-08-29T06:00:38+00:00 · per-run timeout 240s · cell format: `PASS/FAIL <wall-clock> (<iterations>)`; `ERROR` = crashed or unparseable, `TIMEOUT` = exceeded the per-run limit._
+_Generated 2026-08-29T12:53:55+00:00 · per-run timeout 240s · cell format: `PASS/FAIL <wall-clock> (<iterations>)`; `ERROR` = crashed or unparseable, `TIMEOUT` = exceeded the per-run limit._
 
 | Bug | Baseline | Advanced |
 | --- | --- | --- |
@@ -15,4 +15,6 @@ _Generated 2026-08-29T06:00:38+00:00 · per-run timeout 240s · cell format: `PA
 | bug_09 | PASS 6.3s | PASS 30.1s (6it) |
 | bug_10 | PASS 6.1s | PASS 19.3s (6it) |
 | bug_11 | PASS 58.6s | PASS 78.9s (6it) |
-| **Total** | **11/11 resolved** | **11/11 resolved** |
+| bug_12 | PASS 28.2s | PASS 56s (4it) |
+| bug_13 | PASS 33.5s | PASS 123.6s (12it) |
+| **Total** | **13/13 resolved** | **13/13 resolved** |
