@@ -69,13 +69,13 @@ Representative output:
 bug id:                 bug_01
 model:                  claude-sonnet-5
 files changed by model: stringutils.py
-previously failing:     1  ['test_stringutils.py::test_truncate_longer_than_limit']
-now passing:            1  ['test_stringutils.py::test_truncate_longer_than_limit']
+previously failing:     2  ['test_stringutils.py::test_truncate_longer_than_limit', 'test_stringutils.py::test_truncate_keeps_all_requested_characters']
+now passing:            2  ['test_stringutils.py::test_truncate_longer_than_limit', 'test_stringutils.py::test_truncate_keeps_all_requested_characters']
 still failing:          0  []
 regressions:            0  []
 bug fixed (all target tests pass, no regressions): True
-api time:               3.9s
-total wall-clock time:  6.3s
+api time:               3.5s
+total wall-clock time:  5.4s
 raw model response:     eval/results/bug_01_baseline_response.txt
 ```
 
@@ -175,12 +175,13 @@ iteration count). Resolution outcomes have been stable across reruns.
 - **Run from the repo root.** `run_all.py` invokes the other two scripts with
   `cwd` set to the root, but run by hand they resolve `eval/...` against your
   current directory.
-- **Windows console encoding.** `run_baseline.py` and `run_agent.py` call
-  `sys.stdout.reconfigure(encoding="utf-8")` so root-cause summaries containing
-  `→` / `—` / `π` print cleanly when stdout is a pipe. On an older checkout
-  without that line you get a `UnicodeEncodeError` on the final print — the fix
-  itself and the trajectory JSON are still written; only the console echo
-  fails.
+- **Windows console encoding.** All four scripts (`run_baseline.py`,
+  `run_agent.py`, `eval/run_all.py`, `eval/score_evidence.py`) call
+  `sys.stdout.reconfigure(encoding="utf-8")` so output containing `→` / `—` /
+  `π` / `·` prints cleanly when stdout is a pipe. On an older checkout without
+  that line you get a `UnicodeEncodeError` on a print — any file the script
+  writes (trajectory JSON, scorecard, summary) is still produced; only the
+  console echo and the exit code are affected.
 - **`run_all.py` merges by default.** A partial run (`--bugs ...`) updates only
   those rows in `summary.json` and carries the rest forward. Use `--no-merge`
   for a clean slate.

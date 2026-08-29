@@ -1,6 +1,6 @@
 # Evidence scorecard — baseline vs. advanced
 
-_Generated 2026-08-29T06:29:30+00:00 from existing artifacts. No API calls._
+_Generated 2026-08-29T07:21:33+00:00 from existing artifacts. No API calls._
 
 ## How to read this
 

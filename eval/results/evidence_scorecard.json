@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-29T06:29:30+00:00",
+  "generated_at": "2026-08-29T07:21:33+00:00",
   "source": "eval/results/*_trajectory.json, *_baseline_response.txt, eval/bugs/*/ground_truth.md (no API calls)",
   "ground_truth_functions": {
     "bug_01": "truncate",

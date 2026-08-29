@@ -32,6 +32,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+# Force UTF-8 on the standard streams so table/markdown output containing →, —,
+# ·, ≈ never crashes when stdout/stderr is a pipe on a non-UTF-8 locale (cp1252
+# on Windows). Same fix as run_baseline.py / run_agent.py.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = REPO_ROOT / "eval" / "results"
 BUGS_DIR = REPO_ROOT / "eval" / "bugs"
