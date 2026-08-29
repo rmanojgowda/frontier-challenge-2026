@@ -1,4 +1,4 @@
-Bug: `len(self._calls) <= self.max_calls` allows one extra call. Should be `<`.
+Bug: `len(self._calls) <= self.max_calls` allows one extra call before hitting the limit. It should be `<`.
 
 ```python
 # path: ratelimiter.py

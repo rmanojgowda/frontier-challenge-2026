@@ -1,4 +1,4 @@
-Bug: `tank_capacity_litres` calls `cylinder_volume(height_m, radius_m)`, but `cylinder_volume` expects `(radius, height)`. This swaps the arguments, causing the wrong result. Fix by calling `cylinder_volume(radius_m, height_m)`.
+The bug is in `tank_capacity_litres`: it calls `cylinder_volume(height_m, radius_m)`, but `cylinder_volume`'s signature is `(radius, height)`, so the arguments get swapped.
 
 ```python
 # path: containers.py

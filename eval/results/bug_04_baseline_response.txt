@@ -1,4 +1,4 @@
-Root cause: the regex `(.*)` is greedy and matches across multiple quoted pairs. Changing it to `(.*?)` (non-greedy) or `([^"]*)` fixes it.
+Root cause: the regex `(\w+)="(.*)"` uses a greedy `.*`, which matches as far as possible, consuming subsequent quoted pairs. Fixing by making it non-greedy (or excluding `"` in the value) makes each match stop at its own closing quote.
 
 ```python
 # path: logparse.py

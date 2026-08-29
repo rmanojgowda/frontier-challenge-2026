@@ -1,4 +1,4 @@
-The root cause is that `update_name` mutates `self._db` directly but never invalidates (or updates) the corresponding entry in `self._cache`, so `get_user` keeps returning the stale cached copy. The fix is to invalidate the cache entry when the record is updated.
+The root cause: `update_name` mutates `self._db` but never invalidates/updates the corresponding entry in `self._cache`, so `get_user` keeps returning the stale cached copy.
 
 ```python
 # path: userrepo.py
@@ -28,7 +28,7 @@ class UserRepo:
     def update_name(self, user_id, new_name):
         """Rename a user."""
         self._db[user_id]["name"] = new_name
-        # invalidate any cached copy so subsequent reads see the update
+        # invalidate cache so subsequent reads see the update
         self._cache.pop(user_id, None)
 
     def delete_user(self, user_id):

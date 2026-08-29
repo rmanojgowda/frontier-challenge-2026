@@ -135,26 +135,29 @@ Writes `eval/results/summary.json` and `eval/results/summary.md`, and prints:
 ```
   bug      baseline         advanced
   --------------------------------------------
-  bug_01   PASS 6.4s        PASS 17.3s (4it)
-  bug_02   PASS 6.9s        PASS 32.5s (5it)
-  bug_03   PASS 6.1s        PASS 18.5s (4it)
-  bug_04   PASS 7.6s        PASS 32.6s (6it)
-  bug_05   PASS 7.4s        PASS 23.4s (5it)
-  bug_06   PASS 6.4s        PASS 26.6s (5it)
-  bug_07   PASS 6.8s        PASS 20.8s (4it)
-  bug_08   PASS 6.7s        PASS 30.2s (4it)
-  bug_09   PASS 6.3s        PASS 30.1s (6it)
-  bug_10   PASS 6.1s        PASS 19.3s (6it)
-  bug_11   PASS 58.6s       PASS 78.9s (6it)
-  bug_12   PASS 28.2s       PASS 56s (4it)
-  bug_13   PASS 33.5s       PASS 123.6s (12it)
+  bug_01   PASS 6.6s        PASS 17.3s (4it)
+  bug_02   PASS 6.1s        PASS 18.1s (5it)
+  bug_03   PASS 6s          PASS 19.6s (5it)
+  bug_04   PASS 5.9s        PASS 20.8s (5it)
+  bug_05   PASS 9.6s        PASS 21.3s (5it)
+  bug_06   PASS 6.1s        PASS 23.6s (5it)
+  bug_07   PASS 5.8s        PASS 21.2s (4it)
+  bug_08   PASS 5.6s        PASS 19.8s (4it)
+  bug_09   PASS 5.7s        PASS 22s (6it)
+  bug_10   PASS 7.5s        PASS 18.7s (6it)
+  bug_11   PASS 55.9s       PASS 66.5s (5it)
+  bug_12   PASS 23.8s       PASS 45s (5it)
+  bug_13   PASS 30s         PASS 53.3s (4it)
   --------------------------------------------
   Total    13/13 resolved   13/13 resolved
 ```
 
-(`bug_13`'s 12 advanced iterations in this sample are one instance of the
-verification-and-recovery event described in `README.md` — `bug_12` can trigger
-the same event on a different run; numbers vary run to run.)
+(This is one recorded run. In it both real bugs finished quickly; on other runs
+either `bug_12` or `bug_13` can hit the verification-and-recovery event
+described in `README.md` — the agent's `read_file` of the large module returns
+a truncated view, it patches from that, and recovers — pushing that bug's
+advanced run to roughly 90–125 s / 10–12 iterations. `bug_11` also varies
+(55–79 s). Numbers vary run to run; resolution outcomes have been stable.)
 
 Flags: `--bugs bug_03 bug_07` runs a subset (merged into the existing summary),
 `--no-merge` overwrites instead of merging, `--timeout N` sets the per-run cap

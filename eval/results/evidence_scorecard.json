@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-29T12:59:38+00:00",
+  "generated_at": "2026-08-29T14:51:29+00:00",
   "source": "eval/results/*_trajectory.json, *_baseline_response.txt, eval/bugs/*/ground_truth.md (no API calls)",
   "ground_truth_functions": {
     "bug_01": "truncate",
@@ -89,7 +89,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 864,
+          "response_chars": 826,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -136,8 +136,7 @@
           ],
           "root_cause_signals": {
             "line_refs": [
-              "line 12",
-              "stringutils.py:12"
+              "line 12"
             ],
             "backtick_identifiers": [
               "length",
@@ -175,17 +174,18 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 1233,
+          "response_chars": 1205,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "False",
               "TypeError",
               "ValueError",
+              "int",
               "is_in_range",
               "row",
-              "validate_row",
-              "value"
+              "str",
+              "validate_row"
             ]
           },
           "file_signals": [
@@ -232,15 +232,16 @@
             "backtick_identifiers": [
               "False",
               "None",
-              "NoneType",
               "TypeError",
               "ValueError",
-              "age",
+              "except",
               "filter_valid",
+              "int",
               "is_in_range"
             ]
           },
           "file_signals": [
+            "test_validators.py",
             "validators.py"
           ],
           "true_function_check": {
@@ -265,11 +266,12 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 988,
+          "response_chars": 972,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "APP_WORKERS",
+              "ZeroDivisionError",
               "get_worker_count()",
               "items",
               "partition()"
@@ -300,16 +302,17 @@
         "evidence": {
           "tool_sequence": [
             "read_file",
+            "list_files",
             "search_code",
             "run_tests",
             "apply_patch"
           ],
-          "first_apply_patch_step": 4,
+          "first_apply_patch_step": 5,
           "run_tests_before_patch_steps": [
-            3
+            4
           ],
           "post_patch_checks": [
-            "step 4: apply_patch auto-checkpoint"
+            "step 5: apply_patch auto-checkpoint"
           ],
           "root_cause_signals": {
             "line_refs": [
@@ -321,11 +324,11 @@
               "APP_WORKERS",
               "ZeroDivisionError",
               "get_worker_count()",
-              "int(os.environ.get(\"APP_WORKERS\", \"0\"))",
               "partition()",
               "run_tests",
               "test_batch_timeout_default",
-              "test_partition_with_default_config"
+              "test_partition_with_default_config",
+              "test_region_default"
             ]
           },
           "file_signals": [
@@ -353,7 +356,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 748,
+          "response_chars": 845,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -384,37 +387,36 @@
         },
         "evidence": {
           "tool_sequence": [
-            "list_files",
             "search_code",
             "read_file",
             "read_file",
             "run_tests",
             "apply_patch"
           ],
-          "first_apply_patch_step": 6,
+          "first_apply_patch_step": 5,
           "run_tests_before_patch_steps": [
-            5
+            4
           ],
           "post_patch_checks": [
-            "step 6: apply_patch auto-checkpoint"
+            "step 5: apply_patch auto-checkpoint"
           ],
           "root_cause_signals": {
             "line_refs": [
               "line 5"
             ],
             "backtick_identifiers": [
-              "findall",
+              "_LEVEL_RE",
+              "get_level",
+              "is_error",
+              "run_tests",
               "test_get_level",
               "test_is_error",
               "test_parse_multiple_pairs",
-              "test_parse_pair_among_other_text",
-              "test_parse_single_pair",
-              "test_value_with_spaces_is_kept_whole"
+              "test_parse_pair_among_other_text"
             ]
           },
           "file_signals": [
-            "logparse.py",
-            "test_logparse.py"
+            "logparse.py"
           ],
           "true_function_check": {
             "note": "ground_truth.md has no 'Function:' field for this bug"
@@ -437,7 +439,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 1370,
+          "response_chars": 1270,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -483,21 +485,20 @@
             "step 5: apply_patch auto-checkpoint"
           ],
           "root_cause_signals": {
-            "line_refs": [
-              "line 16"
-            ],
+            "line_refs": [],
             "backtick_identifiers": [
+              "_cache",
+              "_db",
               "delete_user",
               "get_user",
               "test_delete_evicts_cache",
               "test_get_unknown_user_is_none",
               "test_get_user_returns_record",
-              "test_update_then_get_returns_new_name",
-              "test_update_without_prior_read",
-              "update_name"
+              "test_update_then_get_returns_new_name"
             ]
           },
           "file_signals": [
+            "test_userrepo.py",
             "userrepo.py"
           ],
           "true_function_check": {
@@ -522,13 +523,12 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 942,
+          "response_chars": 886,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "cylinder_volume",
               "cylinder_volume(height_m, radius_m)",
-              "cylinder_volume(radius_m, height_m)",
               "mathlib",
               "tank_capacity_litres"
             ]
@@ -572,16 +572,16 @@
           ],
           "root_cause_signals": {
             "line_refs": [
-              "line 15",
-              "line 6"
+              "containers.py:15",
+              "mathlib.py:6"
             ],
             "backtick_identifiers": [
               "cylinder_volume",
+              "cylinder_volume(height_m, radius_m)",
               "fill_time_seconds",
-              "height_m",
-              "radius_m",
               "tank_capacity_litres",
               "tank_capacity_litres(10, 2)",
+              "tank_capacity_litres(height_m, radius_m)",
               "test_cylinder_volume_direct",
               "test_fill_time"
             ]
@@ -593,7 +593,7 @@
           ],
           "true_function_check": {
             "target": "tank_capacity_litres",
-            "matched": "`tank_capacity_litres`"
+            "matched": "`tank_capacity_litres("
           }
         }
       }
@@ -613,13 +613,12 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 917,
+          "response_chars": 907,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "datetime",
               "event_day",
-              "to_local",
               "ts_utc",
               "tz_offset_hours"
             ]
@@ -666,22 +665,21 @@
             ],
             "backtick_identifiers": [
               "event_day",
-              "event_day()",
+              "is_weekend",
+              "run_tests",
               "test_event_day_after_local_midnight_ahead_zone",
               "test_event_day_before_local_midnight",
               "test_event_day_same_day_in_both_zones",
               "test_is_weekend_uses_local_day",
-              "test_to_local_shifts_by_offset",
-              "to_local"
+              "test_to_local_shifts_by_offset"
             ]
           },
           "file_signals": [
-            "localtime.py",
-            "test_localtime.py"
+            "localtime.py"
           ],
           "true_function_check": {
             "target": "event_day",
-            "matched": "`event_day("
+            "matched": "`event_day`"
           }
         }
       }
@@ -701,14 +699,13 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 845,
+          "response_chars": 876,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "name",
               "racers",
               "rank",
-              "sorted(racers, key=lambda r: -r[\"time\"])",
               "time"
             ]
           },
@@ -753,14 +750,14 @@
               "line 10"
             ],
             "backtick_identifiers": [
-              "Cy",
               "fastest()",
               "podium()",
+              "rank",
               "rank_by_time()",
+              "run_tests",
               "test_fastest",
               "test_podium",
-              "test_rank_numbers_start_at_one_for_fastest",
-              "test_rank_order_is_fastest_first"
+              "test_rank_numbers_start_at_one_for_fastest"
             ]
           },
           "file_signals": [
@@ -788,7 +785,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 845,
+          "response_chars": 873,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -839,13 +836,11 @@
           ],
           "root_cause_signals": {
             "line_refs": [
-              "line 19",
               "line 20"
             ],
             "backtick_identifiers": [
               "False",
               "True",
-              "max_calls",
               "test_allows_up_to_the_limit",
               "test_exactly_max_calls_are_allowed_in_a_window",
               "test_rejects_the_call_that_exceeds_the_limit",
@@ -858,7 +853,7 @@
           ],
           "true_function_check": {
             "target": "allow",
-            "matched": "allow("
+            "matched": ".allow`"
           }
         }
       }
@@ -878,7 +873,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 897,
+          "response_chars": 908,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -933,11 +928,13 @@
             ],
             "backtick_identifiers": [
               "RecursionError",
-              "count_nodes",
               "height",
               "height(node)",
-              "node",
-              "sum_values"
+              "test_count_nodes",
+              "test_height_of_leaf",
+              "test_height_of_single_level",
+              "test_height_of_tree",
+              "test_sum_values"
             ]
           },
           "file_signals": [
@@ -966,7 +963,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 3704,
+          "response_chars": 3560,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -1005,18 +1002,17 @@
         "evidence": {
           "tool_sequence": [
             "list_files",
-            "search_code",
             "read_file",
             "read_file",
             "run_tests",
             "apply_patch"
           ],
-          "first_apply_patch_step": 6,
+          "first_apply_patch_step": 5,
           "run_tests_before_patch_steps": [
-            5
+            4
           ],
           "post_patch_checks": [
-            "step 6: apply_patch auto-checkpoint"
+            "step 5: apply_patch auto-checkpoint"
           ],
           "root_cause_signals": {
             "line_refs": [
@@ -1024,18 +1020,17 @@
             ],
             "backtick_identifiers": [
               "False",
-              "LOYAL",
-              "_tier_threshold(2)",
               "calculate_total",
+              "calculate_total(items, NADIA, \"LOYAL\")",
               "get_price_tier",
               "lifetime_spend",
-              "test_price_tier_lookups",
-              "test_returning_customer_total_matches_quote"
+              "test_bonus_applies_without_a_coupon",
+              "test_non_returning_customer_gets_only_the_coupon",
+              "test_price_tier_lookups"
             ]
           },
           "file_signals": [
-            "pricing.py",
-            "test_pricing.py"
+            "pricing.py"
           ],
           "true_function_check": {
             "target": "get_price_tier",
@@ -1059,7 +1054,7 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 6873,
+          "response_chars": 6662,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
@@ -1093,26 +1088,28 @@
             "search_code",
             "read_file",
             "run_tests",
-            "apply_patch"
+            "apply_patch",
+            "run_tests"
           ],
           "first_apply_patch_step": 4,
           "run_tests_before_patch_steps": [
             3
           ],
           "post_patch_checks": [
-            "step 4: apply_patch auto-checkpoint"
+            "step 4: apply_patch auto-checkpoint",
+            "step 5: run_tests"
           ],
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "chopped",
-              "format",
-              "formatted",
               "intword()",
-              "ordinal",
+              "intword(999_950_000)",
+              "intword(999_999_999)",
+              "intword(999_999_999_999)",
               "power",
-              "powers",
-              "test_intword_below_million_unchanged"
+              "test_intword_below_million_unchanged",
+              "test_intword_carry_into_trillions"
             ]
           },
           "file_signals": [
@@ -1141,12 +1138,11 @@
           "auditable_trajectory": false
         },
         "evidence": {
-          "response_chars": 9647,
+          "response_chars": 9683,
           "root_cause_signals": {
             "line_refs": [],
             "backtick_identifiers": [
               "VersionInfo",
-              "compare()",
               "convert",
               "nat_cmp"
             ]
@@ -1178,14 +1174,6 @@
             "search_code",
             "read_file",
             "run_tests",
-            "apply_patch",
-            "read_file",
-            "search_code",
-            "search_code",
-            "search_code",
-            "search_code",
-            "search_code",
-            "search_code",
             "apply_patch"
           ],
           "first_apply_patch_step": 4,
@@ -1193,22 +1181,21 @@
             3
           ],
           "post_patch_checks": [
-            "step 4: apply_patch auto-checkpoint",
-            "step 12: apply_patch auto-checkpoint"
+            "step 4: apply_patch auto-checkpoint"
           ],
           "root_cause_signals": {
             "line_refs": [
               "line 149"
             ],
             "backtick_identifiers": [
+              "True",
               "compare(\"1.0.0-1\", \"1.0.0-alpha\")",
               "compare(\"1.0.0-alpha.1\", \"1.0.0-alpha.beta\")",
               "compare()",
-              "run_tests",
-              "tag",
-              "test_numeric_prerelease_identifier_sorts_below_text",
-              "test_numeric_prerelease_identifier_sorts_below_text_first_field",
-              "test_semver_org_precedence_chain"
+              "compare_by_keys",
+              "test_any_prerelease_sorts_below_the_release",
+              "test_numeric_identifiers_compare_numerically",
+              "test_numeric_prerelease_identifier_sorts_below_text"
             ]
           },
           "file_signals": [

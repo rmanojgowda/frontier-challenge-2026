@@ -1,4 +1,4 @@
-Root cause: `text[:length - 1]` slices one character short. It should be `text[:length]`.
+Bug: `text[:length - 1]` should be `text[:length]`.
 
 ```python
 # path: stringutils.py

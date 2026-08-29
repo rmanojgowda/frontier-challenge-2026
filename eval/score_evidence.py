@@ -92,14 +92,35 @@ def _names_true_function(text: str, func: str | None) -> tuple[bool | None, dict
 
     A bare word-boundary match is deliberately NOT accepted -- 'allow' and
     'height' are ordinary English words and appear in prose about those bugs
-    without referring to the function. Accepted forms: ```func``` , ``func(`` ,
-    ```func(...)``` , and ```func.xxx``` / ```func()`` `` (the name opening a
-    back-ticked code expression, e.g. `nat_cmp.convert()`).
+    without referring to the function. Accepted forms:
+
+      * ```func``` , ``func(`` , ```func(...)```
+      * ```func.xxx``` -- the name opening a back-ticked dotted expression
+        (e.g. `nat_cmp.convert()`)
+      * ``.func`` / ``.func(`` -- the name as the trailing member of a
+        back-ticked dotted path (e.g. `RateLimiter.allow`)
+
+    Refinement history -- this pattern has been widened three times, each time
+    because a *genuine correct answer* was being under-counted by an
+    over-narrow regex, never to raise a score:
+      1. added ``func(`` -- the agent often names a function by calling it.
+      2. added ```func.xxx``` (bug_13: the agent wrote `nat_cmp.convert()` for
+         the nested `nat_cmp` helper; leading dotted access was not matched).
+      3. added ``.func`` (bug_09: the agent wrote `RateLimiter.allow` -- the
+         class-qualified method name, a *clearer* identification than the bare
+         `allow` in ground_truth; trailing dotted access was not matched).
+    The bare-word exclusion (no plain "allow" / "height" in prose) is
+    unchanged; only code-symbol contexts are ever added.
     """
     if not func:
         return None, {"note": "ground_truth.md has no 'Function:' field for this bug"}
     esc = re.escape(func)
-    m = re.search(r"`" + esc + r"(?:`|\(|\.\w)" + r"|\b" + esc + r"\s*\(", text)
+    m = re.search(
+        r"`" + esc + r"(?:`|\(|\.\w)"      # `func`  `func(  `func.x
+        r"|\." + esc + r"(?:`|\()"          # .func`  .func(   (trailing member)
+        r"|\b" + esc + r"\s*\(",            # func(   (called in prose/code)
+        text,
+    )
     return bool(m), {"target": func, "matched": m.group(0) if m else None}
 
 
@@ -289,9 +310,13 @@ def build_markdown(rows: dict[str, dict], gt_funcs: dict[str, str | None],
     out.append("- **2 (weak)** — text matches `line <N>` / `file.py:<N>`, or contains a "
                "back-ticked identifier like `` `foo` `` / `` `foo(a, b)` ``.")
     out.append("- **2b (strict)** — the ground-truth function name appears as a code "
-               "symbol: `` `name` `` or `name(`. A bare word match is rejected on "
+               "symbol: `` `name` ``, `name(`, `` `name.x` `` (leading member) or "
+               "`` `Class.name` `` (trailing member). A bare word match is rejected on "
                "purpose (`allow`, `height` are ordinary words that occur in prose about "
-               "those bugs).")
+               "those bugs). This pattern has been widened three times — each time to "
+               "stop under-counting a genuine correct answer (e.g. the agent writing "
+               "`RateLimiter.allow` for ground truth `allow`), never to raise a score; "
+               "see `_names_true_function` in `eval/score_evidence.py` for the history.")
     out.append("- **3** — text contains a `*.py` path.")
     out.append("")
     out.append("### Ground-truth function per bug")

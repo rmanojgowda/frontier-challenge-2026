@@ -1,4 +1,4 @@
-Bug root cause: `sorted(racers, key=lambda r: -r["time"])` sorts descending (slowest first). It should sort ascending by time.
+The bug is the sort key uses `-r["time"]`, which sorts descending (slowest first). It should sort ascending by time so the fastest (lowest time) comes first.
 
 ```python
 # path: ranking.py

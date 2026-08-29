@@ -246,8 +246,9 @@ single call, so the truncation failure mode did not arise for it.
 ### Instance 1 — `bug_13`, checkpoint-detected
 
 `bug_13`'s fixture is the verbatim `python-semver` module, 342 lines. In one
-advanced run (trajectory `eval/results/bug_13_trajectory.json` /
-`submission/trajectories/bug_13_trajectory.json`):
+advanced run — frozen as `submission/trajectories/bug_13_trajectory.json` (the
+live `eval/results/` copy is regenerated on every batch and does not always
+contain this event):
 
 - **Step 2** `read_file semver.py` returned a **truncated** result (~5.4 KB of a
   ~10 KB file).

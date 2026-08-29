@@ -1,4 +1,4 @@
-The default fallback string is `"0"` instead of `"4"`, causing `get_worker_count()` to return 0 when `APP_WORKERS` is unset, which then causes division by zero in `partition()`.
+The default fallback for `APP_WORKERS` is `"0"` instead of `"4"`, causing `get_worker_count()` to return 0 and leading to a `ZeroDivisionError` in `partition()`.
 
 ```python
 # path: appconfig.py

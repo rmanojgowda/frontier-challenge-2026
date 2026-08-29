@@ -1,6 +1,6 @@
 # Evidence scorecard — baseline vs. advanced
 
-_Generated 2026-08-29T12:59:38+00:00 from existing artifacts. No API calls._
+_Generated 2026-08-29T14:51:29+00:00 from existing artifacts. No API calls._
 
 ## How to read this
 
@@ -13,7 +13,7 @@ _Generated 2026-08-29T12:59:38+00:00 from existing artifacts. No API calls._
 ### Heuristics
 
 - **2 (weak)** — text matches `line <N>` / `file.py:<N>`, or contains a back-ticked identifier like `` `foo` `` / `` `foo(a, b)` ``.
-- **2b (strict)** — the ground-truth function name appears as a code symbol: `` `name` `` or `name(`. A bare word match is rejected on purpose (`allow`, `height` are ordinary words that occur in prose about those bugs).
+- **2b (strict)** — the ground-truth function name appears as a code symbol: `` `name` ``, `name(`, `` `name.x` `` (leading member) or `` `Class.name` `` (trailing member). A bare word match is rejected on purpose (`allow`, `height` are ordinary words that occur in prose about those bugs). This pattern has been widened three times — each time to stop under-counting a genuine correct answer (e.g. the agent writing `RateLimiter.allow` for ground truth `allow`), never to raise a score; see `_names_true_function` in `eval/score_evidence.py` for the history.
 - **3** — text contains a `*.py` path.
 
 ### Ground-truth function per bug

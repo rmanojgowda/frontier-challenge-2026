@@ -1,4 +1,4 @@
-Root cause: `event_day` uses `ts_utc.date()` directly instead of converting to local time first via `to_local`.
+Root cause: `event_day` returns the date of the UTC timestamp instead of the local-shifted timestamp.
 
 ```python
 # path: localtime.py

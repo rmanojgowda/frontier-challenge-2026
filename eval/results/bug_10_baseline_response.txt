@@ -1,4 +1,4 @@
-The bug is in `height()`: the leaf case calls `height(node)` again (infinite recursion) instead of returning `0`.
+The bug is in `height()`: the leaf case calls `height(node)` on itself instead of returning `0`, causing infinite recursion.
 
 ```python
 # path: tree.py

@@ -1,4 +1,4 @@
-The bug is in `intword`: when the formatted number rounds up to `1000.0` (or more generally, `1000` in the given format), the code doesn't check for this and bump to the next unit. Fixing the loop to detect this rounding overflow and shift to the next power/word.
+The bug is in `intword`: when the formatted value rounds up to 1000 (e.g., `999_999_999` → `"1000.0 million"`), the code doesn't check for this and roll over to the next unit. I added a check that re-computes using the next power when the rounded string equals `1000`.
 
 ```python
 # path: humanize/number.py
@@ -92,15 +92,12 @@ def intword(value, format="%.1f"):
     for ordinal, power in enumerate(powers[1:], 1):
         if value < power:
             chopped = value / float(powers[ordinal - 1])
-            if float(format % chopped) == float(1000):
-                # The rounded/truncated number is equal to 1000, so we
-                # should use the next word (e.g. "billion" instead of
-                # "million") if one is available.
-                if ordinal < len(powers) - 1:
-                    chopped = value / float(powers[ordinal])
-                    return (
-                        " ".join([format, _(human_powers[ordinal])])
-                    ) % chopped
+            if (
+                format % chopped == format % 1000
+                and ordinal < len(human_powers)
+            ):
+                chopped = value / float(powers[ordinal])
+                return (" ".join([format, _(human_powers[ordinal])])) % chopped
             return (" ".join([format, _(human_powers[ordinal - 1])])) % chopped
     return str(value)
 

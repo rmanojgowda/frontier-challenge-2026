@@ -1,4 +1,4 @@
-The bug is in `nat_cmp`'s `convert` function inside `compare()`. Numeric identifiers should sort **before** (lower precedence than) alphanumeric identifiers per semver spec, but the tuple tags were reversed (numeric tagged `2`, text tagged `1`), causing numbers to sort after words.
+The bug is in `nat_cmp`'s `convert` function: it tags numeric identifiers with a higher sort-priority marker (`2`) than non-numeric ones (`1`), but per semver spec numeric identifiers must sort *lower* than alphanumeric ones. Swapping the tags fixes it while preserving numeric-vs-numeric and text-vs-text comparisons.
 
 ```python
 # path: semver.py

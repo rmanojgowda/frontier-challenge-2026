@@ -1,13 +1,12 @@
-Looking at this, the reported "double bonus" framing turns out to be a red herring. Let's verify by tracing the actual numbers:
+## Root Cause
 
-- Nadia's `lifetime_spend` is exactly `500`, which is exactly `_tier_threshold(2)` (`100 * 5**1`).
-- `get_price_tier` uses a strict `>` comparison, so a spend of exactly `500` does **not** qualify for tier 2 — it stays at tier 1, giving `coupon_rate = 0.20` instead of the correct `0.15`.
-- With the wrong tier (1) and the bonus-rebasing math, the result comes out to `150.0` — the same value the bug report attributes to "double bonus", but it's actually caused by using the wrong coupon rate for her tier.
-- If tier is correctly computed as 2 (using `>=` since `_TIER_FLOOR` is documented as "the lifetime spend that lifts a customer out of tier 0", i.e., an inclusive boundary), `coupon_rate = 0.15`, and the same bonus/coupon math correctly yields `160.0`.
+The bug is in `get_price_tier`. The docstring for `_TIER_FLOOR` explicitly says it's "the lifetime spend that **lifts** a customer out of tier 0" — i.e., reaching the threshold should count as qualifying for the next tier. But the loop uses strict `>`, so a customer whose spend is *exactly* equal to a tier threshold is left one tier lower than intended.
 
-So the root cause is the boundary comparison in `get_price_tier` using `>` instead of `>=`, causing customers exactly at a tier threshold (like Nadia, at `500`) to be placed one tier too low — this also explains why it's specific to her account and why other returning customers "look fine" (their spend isn't exactly on a boundary).
+Nadia's `lifetime_spend` is exactly `500`, which is precisely `_tier_threshold(2)` (`100 * 5**1`). With `>`, she's kept at tier 1 (20% `LOYAL` coupon) instead of being promoted to tier 2 (15% `LOYAL` coupon). The extra 5 percentage points of coupon, combined with the (correct, single) 5% returning-customer bonus and the coupon-rebasing math in `calculate_total`, is what produces $150.00 instead of $160.00.
 
-The fix is a one-line change:
+This explains why it's customer-specific: only customers whose lifetime spend lands *exactly* on a tier threshold boundary are affected — everyone else's spend falls strictly between thresholds, so `>` and `>=` agree for them.
+
+The fix is a one-character change: use `>=` instead of `>` when comparing spend to a tier threshold.
 
 ```python
 # path: pricing.py

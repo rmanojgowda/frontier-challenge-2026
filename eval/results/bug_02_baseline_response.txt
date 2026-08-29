@@ -1,4 +1,4 @@
-The bug is that `is_in_range` only catches `ValueError`, but comparing `int <= str <= int` raises `TypeError`. Fix by catching `TypeError` as well.
+The bug: `is_in_range` only catches `ValueError`, but comparing `int` and `str` raises `TypeError`. Need to catch both.
 
 ```python
 # path: validators.py
