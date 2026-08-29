@@ -1,0 +1,21 @@
+"""Ranking helpers for the race results board."""
+
+
+def rank_by_time(racers):
+    """Return ``racers`` ordered from fastest to slowest.
+
+    Each racer is a dict with ``name`` and ``time`` (seconds, lower is better).
+    The returned list has a ``rank`` key added, starting at 1 for the fastest.
+    """
+    ordered = sorted(racers, key=lambda r: -r["time"])
+    return [dict(r, rank=i + 1) for i, r in enumerate(ordered)]
+
+
+def fastest(racers):
+    """Return the name of the fastest racer."""
+    return rank_by_time(racers)[0]["name"]
+
+
+def podium(racers):
+    """Return the names of the top three finishers, fastest first."""
+    return [r["name"] for r in rank_by_time(racers)[:3]]

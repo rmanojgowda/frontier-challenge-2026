@@ -1,0 +1,28 @@
+Bug: `len(self._calls) <= self.max_calls` allows one extra call. Should be `<`.
+
+```python
+# path: ratelimiter.py
+"""A simple fixed-window rate limiter."""
+
+
+class RateLimiter:
+    """Allow at most ``max_calls`` calls per rolling ``window`` seconds."""
+
+    def __init__(self, max_calls, window):
+        self.max_calls = max_calls
+        self.window = window
+        self._calls = []  # timestamps of allowed calls
+
+    def allow(self, now):
+        """Record and allow the call at time ``now``, or reject it.
+
+        Returns ``True`` if the call is permitted, ``False`` if it exceeds the
+        limit.
+        """
+        cutoff = now - self.window
+        self._calls = [t for t in self._calls if t > cutoff]
+        if len(self._calls) < self.max_calls:
+            self._calls.append(now)
+            return True
+        return False
+```

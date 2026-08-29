@@ -1,0 +1,22 @@
+"""Parse structured fields out of application log lines."""
+
+import re
+
+_KV_RE = re.compile(r'(\w+)="(.*)"')
+_LEVEL_RE = re.compile(r"\b(DEBUG|INFO|WARNING|ERROR)\b")
+
+
+def parse_kv(line):
+    """Return a dict of the ``key="value"`` pairs found in ``line``."""
+    return dict(_KV_RE.findall(line))
+
+
+def get_level(line):
+    """Return the log level token in ``line``, or ``None``."""
+    match = _LEVEL_RE.search(line)
+    return match.group(1) if match else None
+
+
+def is_error(line):
+    """True if the line is at ERROR level."""
+    return get_level(line) == "ERROR"

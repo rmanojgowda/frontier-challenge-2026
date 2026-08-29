@@ -1,0 +1,1176 @@
+{
+  "generated_at": "2026-08-29T06:29:30+00:00",
+  "source": "eval/results/*_trajectory.json, *_baseline_response.txt, eval/bugs/*/ground_truth.md (no API calls)",
+  "ground_truth_functions": {
+    "bug_01": "truncate",
+    "bug_02": "is_in_range",
+    "bug_03": "get_worker_count",
+    "bug_04": null,
+    "bug_05": "update_name",
+    "bug_06": "tank_capacity_litres",
+    "bug_07": "event_day",
+    "bug_08": "rank_by_time",
+    "bug_09": "allow",
+    "bug_10": "height",
+    "bug_11": "get_price_tier"
+  },
+  "criteria": [
+    {
+      "num": "1",
+      "key": "reproduces_failure",
+      "label": "Reproduces the failure before patching",
+      "group": "structural"
+    },
+    {
+      "num": "2",
+      "key": "identifies_root_cause",
+      "label": "Uses code formatting / cites a line number (NOT verified vs. true root cause)",
+      "group": "data-dependent (weak)"
+    },
+    {
+      "num": "2b",
+      "key": "names_true_buggy_function",
+      "label": "Explicitly names the actual buggy function (per ground_truth.md)",
+      "group": "root-cause-verified"
+    },
+    {
+      "num": "3",
+      "key": "shows_file_location",
+      "label": "Names a specific file path",
+      "group": "data-dependent (weak)"
+    },
+    {
+      "num": "4",
+      "key": "demonstrates_fix_after_patch",
+      "label": "Re-runs tests after applying the patch",
+      "group": "structural"
+    },
+    {
+      "num": "5",
+      "key": "checks_regression_suite",
+      "label": "Re-runs the whole suite after the patch",
+      "group": "structural"
+    },
+    {
+      "num": "6",
+      "key": "executable_verification",
+      "label": "Harness runs pytest before/after externally",
+      "group": "harness-level"
+    },
+    {
+      "num": "7",
+      "key": "auditable_trajectory",
+      "label": "Full step-by-step trajectory is recorded",
+      "group": "structural"
+    }
+  ],
+  "caveats": {
+    "structural": "criteria 1,4,5,7 are fixed by architecture; baseline scores 0 on all four for every bug by design -- not a quality signal",
+    "criterion_2_is_weak": "criterion 2 only checks for code formatting / a line number, NOT against the true root cause; both systems pass it on every bug",
+    "criterion_2b_is_the_real_one": "criterion 2b checks the explanation against the Function: field of ground_truth.md; it is the only criterion verified against truth. n/a for bug_04 (module-level regex, no Function field)",
+    "harness_level": "criterion 6 is external verification done by the harness for BOTH systems",
+    "do_not_sum": "groups are reported separately on purpose"
+  },
+  "bugs": {
+    "bug_01": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 864,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "length",
+              "name",
+              "text"
+            ]
+          },
+          "file_signals": [
+            "stringutils.py"
+          ],
+          "true_function_check": {
+            "target": "truncate",
+            "matched": "truncate("
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 4,
+          "run_tests_before_patch_steps": [
+            3
+          ],
+          "post_patch_checks": [
+            "step 4: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 12",
+              "stringutils.py:12"
+            ],
+            "backtick_identifiers": [
+              "length",
+              "test_initials",
+              "test_normalize_spaces",
+              "test_truncate_equal_to_limit",
+              "test_truncate_keeps_all_requested_characters",
+              "test_truncate_longer_than_limit",
+              "test_truncate_shorter_than_limit",
+              "test_word_count"
+            ]
+          },
+          "file_signals": [
+            "stringutils.py"
+          ],
+          "true_function_check": {
+            "target": "truncate",
+            "matched": "truncate("
+          }
+        }
+      }
+    },
+    "bug_02": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 1233,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "False",
+              "TypeError",
+              "ValueError",
+              "is_in_range",
+              "row",
+              "validate_row",
+              "value"
+            ]
+          },
+          "file_signals": [
+            "validators.py"
+          ],
+          "true_function_check": {
+            "target": "is_in_range",
+            "matched": "`is_in_range`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "list_files",
+            "read_file",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 5,
+          "run_tests_before_patch_steps": [
+            4
+          ],
+          "post_patch_checks": [
+            "step 5: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 21"
+            ],
+            "backtick_identifiers": [
+              "False",
+              "None",
+              "NoneType",
+              "TypeError",
+              "ValueError",
+              "age",
+              "filter_valid",
+              "is_in_range"
+            ]
+          },
+          "file_signals": [
+            "validators.py"
+          ],
+          "true_function_check": {
+            "target": "is_in_range",
+            "matched": "`is_in_range`"
+          }
+        }
+      }
+    },
+    "bug_03": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 988,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "APP_WORKERS",
+              "get_worker_count()",
+              "items",
+              "partition()"
+            ]
+          },
+          "file_signals": [
+            "appconfig.py"
+          ],
+          "true_function_check": {
+            "target": "get_worker_count",
+            "matched": "get_worker_count("
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "read_file",
+            "search_code",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 4,
+          "run_tests_before_patch_steps": [
+            3
+          ],
+          "post_patch_checks": [
+            "step 4: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "appconfig.py:27",
+              "line 11",
+              "line 27"
+            ],
+            "backtick_identifiers": [
+              "APP_WORKERS",
+              "ZeroDivisionError",
+              "get_worker_count()",
+              "int(os.environ.get(\"APP_WORKERS\", \"0\"))",
+              "partition()",
+              "run_tests",
+              "test_batch_timeout_default",
+              "test_partition_with_default_config"
+            ]
+          },
+          "file_signals": [
+            "appconfig.py"
+          ],
+          "true_function_check": {
+            "target": "get_worker_count",
+            "matched": "get_worker_count("
+          }
+        }
+      }
+    },
+    "bug_04": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": null,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 748,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "None",
+              "line"
+            ]
+          },
+          "file_signals": [
+            "logparse.py"
+          ],
+          "true_function_check": {
+            "note": "ground_truth.md has no 'Function:' field for this bug"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": null,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "list_files",
+            "search_code",
+            "read_file",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 6,
+          "run_tests_before_patch_steps": [
+            5
+          ],
+          "post_patch_checks": [
+            "step 6: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 5"
+            ],
+            "backtick_identifiers": [
+              "findall",
+              "test_get_level",
+              "test_is_error",
+              "test_parse_multiple_pairs",
+              "test_parse_pair_among_other_text",
+              "test_parse_single_pair",
+              "test_value_with_spaces_is_kept_whole"
+            ]
+          },
+          "file_signals": [
+            "logparse.py",
+            "test_logparse.py"
+          ],
+          "true_function_check": {
+            "note": "ground_truth.md has no 'Function:' field for this bug"
+          }
+        }
+      }
+    },
+    "bug_05": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 1370,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "get_user",
+              "update_name"
+            ]
+          },
+          "file_signals": [
+            "userrepo.py"
+          ],
+          "true_function_check": {
+            "target": "update_name",
+            "matched": "`update_name`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "list_files",
+            "read_file",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 5,
+          "run_tests_before_patch_steps": [
+            4
+          ],
+          "post_patch_checks": [
+            "step 5: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 16"
+            ],
+            "backtick_identifiers": [
+              "delete_user",
+              "get_user",
+              "test_delete_evicts_cache",
+              "test_get_unknown_user_is_none",
+              "test_get_user_returns_record",
+              "test_update_then_get_returns_new_name",
+              "test_update_without_prior_read",
+              "update_name"
+            ]
+          },
+          "file_signals": [
+            "userrepo.py"
+          ],
+          "true_function_check": {
+            "target": "update_name",
+            "matched": "`update_name`"
+          }
+        }
+      }
+    },
+    "bug_06": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 942,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "cylinder_volume",
+              "cylinder_volume(height_m, radius_m)",
+              "cylinder_volume(radius_m, height_m)",
+              "mathlib",
+              "tank_capacity_litres"
+            ]
+          },
+          "file_signals": [
+            "containers.py"
+          ],
+          "true_function_check": {
+            "target": "tank_capacity_litres",
+            "matched": "`tank_capacity_litres`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 5,
+          "run_tests_before_patch_steps": [
+            4
+          ],
+          "post_patch_checks": [
+            "step 5: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 15",
+              "line 6"
+            ],
+            "backtick_identifiers": [
+              "cylinder_volume",
+              "fill_time_seconds",
+              "height_m",
+              "radius_m",
+              "tank_capacity_litres",
+              "tank_capacity_litres(10, 2)",
+              "test_cylinder_volume_direct",
+              "test_fill_time"
+            ]
+          },
+          "file_signals": [
+            "containers.py",
+            "mathlib.py",
+            "test_containers.py"
+          ],
+          "true_function_check": {
+            "target": "tank_capacity_litres",
+            "matched": "`tank_capacity_litres`"
+          }
+        }
+      }
+    },
+    "bug_07": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 917,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "datetime",
+              "event_day",
+              "to_local",
+              "ts_utc",
+              "tz_offset_hours"
+            ]
+          },
+          "file_signals": [
+            "localtime.py"
+          ],
+          "true_function_check": {
+            "target": "event_day",
+            "matched": "`event_day`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 4,
+          "run_tests_before_patch_steps": [
+            3
+          ],
+          "post_patch_checks": [
+            "step 4: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 18"
+            ],
+            "backtick_identifiers": [
+              "event_day",
+              "event_day()",
+              "test_event_day_after_local_midnight_ahead_zone",
+              "test_event_day_before_local_midnight",
+              "test_event_day_same_day_in_both_zones",
+              "test_is_weekend_uses_local_day",
+              "test_to_local_shifts_by_offset",
+              "to_local"
+            ]
+          },
+          "file_signals": [
+            "localtime.py",
+            "test_localtime.py"
+          ],
+          "true_function_check": {
+            "target": "event_day",
+            "matched": "event_day("
+          }
+        }
+      }
+    },
+    "bug_08": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 845,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "name",
+              "racers",
+              "rank",
+              "sorted(racers, key=lambda r: -r[\"time\"])",
+              "time"
+            ]
+          },
+          "file_signals": [
+            "ranking.py"
+          ],
+          "true_function_check": {
+            "target": "rank_by_time",
+            "matched": "rank_by_time("
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 4,
+          "run_tests_before_patch_steps": [
+            3
+          ],
+          "post_patch_checks": [
+            "step 4: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 10"
+            ],
+            "backtick_identifiers": [
+              "Cy",
+              "fastest()",
+              "podium()",
+              "rank_by_time()",
+              "test_fastest",
+              "test_podium",
+              "test_rank_numbers_start_at_one_for_fastest",
+              "test_rank_order_is_fastest_first"
+            ]
+          },
+          "file_signals": [
+            "ranking.py"
+          ],
+          "true_function_check": {
+            "target": "rank_by_time",
+            "matched": "rank_by_time("
+          }
+        }
+      }
+    },
+    "bug_09": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 845,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "False",
+              "True",
+              "max_calls",
+              "now",
+              "window"
+            ]
+          },
+          "file_signals": [
+            "ratelimiter.py"
+          ],
+          "true_function_check": {
+            "target": "allow",
+            "matched": "allow("
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "search_code",
+            "read_file",
+            "search_code",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 6,
+          "run_tests_before_patch_steps": [
+            5
+          ],
+          "post_patch_checks": [
+            "step 6: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 19",
+              "line 20"
+            ],
+            "backtick_identifiers": [
+              "False",
+              "True",
+              "max_calls",
+              "test_allows_up_to_the_limit",
+              "test_exactly_max_calls_are_allowed_in_a_window",
+              "test_rejects_the_call_that_exceeds_the_limit",
+              "test_window_slides"
+            ]
+          },
+          "file_signals": [
+            "ratelimiter.py",
+            "test_ratelimiter.py"
+          ],
+          "true_function_check": {
+            "target": "allow",
+            "matched": "allow("
+          }
+        }
+      }
+    },
+    "bug_10": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 897,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "children",
+              "height()",
+              "height(node)",
+              "node",
+              "value"
+            ]
+          },
+          "file_signals": [
+            "tree.py"
+          ],
+          "true_function_check": {
+            "target": "height",
+            "matched": "height("
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "list_files",
+            "search_code",
+            "read_file",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 6,
+          "run_tests_before_patch_steps": [
+            5
+          ],
+          "post_patch_checks": [
+            "step 6: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 27"
+            ],
+            "backtick_identifiers": [
+              "RecursionError",
+              "count_nodes",
+              "height",
+              "height(node)",
+              "node",
+              "sum_values"
+            ]
+          },
+          "file_signals": [
+            "test_tree.py",
+            "tree.py"
+          ],
+          "true_function_check": {
+            "target": "height",
+            "matched": "`height`"
+          }
+        }
+      }
+    },
+    "bug_11": {
+      "baseline": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": false,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": false,
+          "checks_regression_suite": false,
+          "executable_verification": true,
+          "auditable_trajectory": false
+        },
+        "evidence": {
+          "response_chars": 3704,
+          "root_cause_signals": {
+            "line_refs": [],
+            "backtick_identifiers": [
+              "LOYAL",
+              "_MAX_TIER",
+              "_TIER_FLOOR",
+              "_tier_threshold(2)",
+              "calculate_total",
+              "coupon",
+              "get_price_tier",
+              "items"
+            ]
+          },
+          "file_signals": [
+            "pricing.py"
+          ],
+          "true_function_check": {
+            "target": "get_price_tier",
+            "matched": "`get_price_tier`"
+          }
+        }
+      },
+      "advanced": {
+        "available": true,
+        "response_available": true,
+        "scores": {
+          "reproduces_failure": true,
+          "identifies_root_cause": true,
+          "names_true_buggy_function": true,
+          "shows_file_location": true,
+          "demonstrates_fix_after_patch": true,
+          "checks_regression_suite": true,
+          "executable_verification": true,
+          "auditable_trajectory": true
+        },
+        "evidence": {
+          "tool_sequence": [
+            "list_files",
+            "search_code",
+            "read_file",
+            "read_file",
+            "run_tests",
+            "apply_patch"
+          ],
+          "first_apply_patch_step": 6,
+          "run_tests_before_patch_steps": [
+            5
+          ],
+          "post_patch_checks": [
+            "step 6: apply_patch auto-checkpoint"
+          ],
+          "root_cause_signals": {
+            "line_refs": [
+              "line 33"
+            ],
+            "backtick_identifiers": [
+              "False",
+              "LOYAL",
+              "_tier_threshold(2)",
+              "calculate_total",
+              "get_price_tier",
+              "lifetime_spend",
+              "test_price_tier_lookups",
+              "test_returning_customer_total_matches_quote"
+            ]
+          },
+          "file_signals": [
+            "pricing.py",
+            "test_pricing.py"
+          ],
+          "true_function_check": {
+            "target": "get_price_tier",
+            "matched": "`get_price_tier`"
+          }
+        }
+      }
+    }
+  },
+  "aggregates": {
+    "structural": {
+      "baseline": {
+        "met": 0,
+        "measured": 44,
+        "pct": 0.0,
+        "per_criterion": {
+          "reproduces_failure": {
+            "met": 0,
+            "measured": 11
+          },
+          "demonstrates_fix_after_patch": {
+            "met": 0,
+            "measured": 11
+          },
+          "checks_regression_suite": {
+            "met": 0,
+            "measured": 11
+          },
+          "auditable_trajectory": {
+            "met": 0,
+            "measured": 11
+          }
+        }
+      },
+      "advanced": {
+        "met": 44,
+        "measured": 44,
+        "pct": 100.0,
+        "per_criterion": {
+          "reproduces_failure": {
+            "met": 11,
+            "measured": 11
+          },
+          "demonstrates_fix_after_patch": {
+            "met": 11,
+            "measured": 11
+          },
+          "checks_regression_suite": {
+            "met": 11,
+            "measured": 11
+          },
+          "auditable_trajectory": {
+            "met": 11,
+            "measured": 11
+          }
+        }
+      }
+    },
+    "data-dependent (weak)": {
+      "baseline": {
+        "met": 22,
+        "measured": 22,
+        "pct": 100.0,
+        "per_criterion": {
+          "identifies_root_cause": {
+            "met": 11,
+            "measured": 11
+          },
+          "shows_file_location": {
+            "met": 11,
+            "measured": 11
+          }
+        }
+      },
+      "advanced": {
+        "met": 22,
+        "measured": 22,
+        "pct": 100.0,
+        "per_criterion": {
+          "identifies_root_cause": {
+            "met": 11,
+            "measured": 11
+          },
+          "shows_file_location": {
+            "met": 11,
+            "measured": 11
+          }
+        }
+      }
+    },
+    "root-cause-verified": {
+      "baseline": {
+        "met": 10,
+        "measured": 10,
+        "pct": 100.0,
+        "per_criterion": {
+          "names_true_buggy_function": {
+            "met": 10,
+            "measured": 10
+          }
+        }
+      },
+      "advanced": {
+        "met": 10,
+        "measured": 10,
+        "pct": 100.0,
+        "per_criterion": {
+          "names_true_buggy_function": {
+            "met": 10,
+            "measured": 10
+          }
+        }
+      }
+    },
+    "harness-level": {
+      "baseline": {
+        "met": 11,
+        "measured": 11,
+        "pct": 100.0,
+        "per_criterion": {
+          "executable_verification": {
+            "met": 11,
+            "measured": 11
+          }
+        }
+      },
+      "advanced": {
+        "met": 11,
+        "measured": 11,
+        "pct": 100.0,
+        "per_criterion": {
+          "executable_verification": {
+            "met": 11,
+            "measured": 11
+          }
+        }
+      }
+    }
+  }
+}

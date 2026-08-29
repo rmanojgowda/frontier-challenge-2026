@@ -1,0 +1,26 @@
+Bug: `tank_capacity_litres` calls `cylinder_volume(height_m, radius_m)`, but `cylinder_volume` expects `(radius, height)`. This swaps the arguments, causing the wrong result. Fix by calling `cylinder_volume(radius_m, height_m)`.
+
+```python
+# path: containers.py
+"""Container capacity helpers, built on :mod:`mathlib`."""
+
+from mathlib import cylinder_volume
+
+# 1 cubic metre = 1000 litres
+_LITRES_PER_CUBIC_M = 1000
+
+
+def tank_capacity_litres(height_m, radius_m):
+    """Capacity in litres of an upright cylindrical tank.
+
+    Note the argument order here is (height, radius) because that is how our
+    tank spec sheets list the dimensions.
+    """
+    volume_m3 = cylinder_volume(radius_m, height_m)
+    return volume_m3 * _LITRES_PER_CUBIC_M
+
+
+def fill_time_seconds(height_m, radius_m, flow_litres_per_s):
+    """How long to fill the tank at a given flow rate."""
+    return tank_capacity_litres(height_m, radius_m) / flow_litres_per_s
+```
