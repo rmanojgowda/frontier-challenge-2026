@@ -114,6 +114,16 @@ number is produced by the harness executing pytest on a pristine copy before
 and a patched copy after, or by `eval/score_evidence.py` reading stored
 artifacts (no extra API calls).
 
+**On the suggested evaluation format.** The challenge's suggested format includes
+"human time per task" as a metric. We didn't track that here, since these are
+small, self-contained synthetic and historical bug fixtures rather than a live
+team's actual workflow — there's no real human baseline to compare against. Our
+primary metric is verified resolution rate (all originally-failing tests pass,
+no regressions), with wall-clock time and API cost reported per bug as the
+closest available proxies. This substitutes the suggested format with a clearer
+rubric for this specific task, per the challenge's own allowance to do so where
+the template doesn't fit.
+
 ### Our initial hypothesis was wrong
 
 We expected the agentic loop to **resolve more bugs** than the one-shot model.
