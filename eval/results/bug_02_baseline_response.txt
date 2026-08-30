@@ -1,4 +1,4 @@
-The bug: `is_in_range` only catches `ValueError`, but comparing `int` and `str` raises `TypeError`. Need to catch both.
+The bug is in `is_in_range`: comparing `str <= int` raises `TypeError`, not `ValueError`, so the except clause doesn't catch it. Fix by catching `TypeError` as well (and handling `None`).
 
 ```python
 # path: validators.py

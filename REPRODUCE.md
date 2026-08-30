@@ -194,11 +194,13 @@ module-level constant with no `Function:` field.)
 | Full batch (`run_all.py`, 13 bugs × 2 systems) | ~11 min (synthetic 11: ≈530 s; `bug_12` + `bug_13`: ≈150–260 s depending on whether a recovery event fires) | part of the project total below | one clean pass of both systems |
 | `score_evidence.py` | < 1 s | $0 | no API calls |
 
-**Measured total: $1.24** for the core project — the 11 synthetic bugs, both
-systems, all debugging reruns, and `bug_11`'s two redesign iterations (source:
-Claude Console cost dashboard). Adding `bug_12` and `bug_13` was two more
-bug-runs on top (roughly $0.10; not separately metered). The per-run figures
-above are rough estimates.
+**Measured total: $3.44** for the entire project (source: Claude Console cost
+dashboard, month-to-date, checked 2026-08-30). This covers everything: the 11
+synthetic bugs, all debugging reruns, `bug_11`'s two redesigns, the two real
+GitHub bugs (`bug_12`, `bug_13`) including `bug_13`'s dropped-and-rebuilt first
+attempt, all three clean-clone reproduction tests, and the regex-fix
+verification reruns (`bug_09` and the rest). The per-run figures above are rough
+estimates.
 
 Numbers vary run to run (API latency, and model nondeterminism in the
 iteration count). Resolution outcomes have been stable across reruns.

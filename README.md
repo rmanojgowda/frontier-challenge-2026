@@ -224,9 +224,11 @@ systems solved everything — the 11 synthetic cases, the hardened trap, and the
 two real historical bugs — and both correctly named the root cause every time
 it was checkable.
 
-The core experiment — the 11 synthetic bugs, both systems, every rerun — cost
-$1.24 in API spend (Claude Console). Adding the two real bugs was two more
-bug-runs on top (~$0.10).
+The entire project cost **$3.44** in API spend (Claude Console cost dashboard,
+month-to-date, checked 2026-08-30) — the 11 synthetic bugs, all debugging
+reruns, `bug_11`'s two redesigns, the two real GitHub bugs including `bug_13`'s
+dropped-and-rebuilt first attempt, all three clean-clone reproduction tests, and
+the regex-fix verification reruns.
 
 ---
 
